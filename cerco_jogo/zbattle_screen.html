@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Battle Screen - Kael vs Enemy</title>
+<style>
+
+  /* ======================================================
+     RESET E FONTE
+     ====================================================== */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
+  }
+
+  body {
+    background-color: #050505;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  /* ======================================================
+     CONTAINER PRINCIPAL DA BATALHA
+     ====================================================== */
+  .battle-container {
+    width: 850px;
+    background-color: #101014;
+    border: 1px solid #2a2a2e;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0,0,0,0.6);
+  }
+
+  /* ------------------ TOPO / HEADER ------------------ */
+  .battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background-color: #0c0c10;
+    border-bottom: 1px solid #2a2a2e;
+  }
+
+  .battle-header .title {
+    color: #4ade80;
+    font-weight: bold;
+    letter-spacing: 1px;
+    font-size: 14px;
+  }
+
+  .battle-header .icons {
+    color: #888;
+    font-size: 14px;
+  }
+
+  /* ------------------ ÁREA DA CENA (BACKGROUND) ------------------ */
+  .battle-scene {
+    position: relative;
+    height: 340px;
+    /*
+      IMAGEM DE FUNDO (cenário: céu, grama, montanhas)
+      Substitua a url abaixo pelo caminho da sua imagem de fundo.
+      Exemplo: background-image: url('imagens/cenario.png');
+    */
+    background-image: url('zpixel_art_fundo.png');
+    background-size: cover;
+    background-position: center;
+    background-color: #3a7bd5; /* cor reserva caso a imagem não carregue */
+  }
+
+  /* Painel de status do INIMIGO (canto superior direito) */
+  .enemy-status {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 190px;
+    background-color: rgba(10,10,14,0.9);
+    border: 1px solid #2a2a2e;
+    border-radius: 4px;
+    padding: 8px 10px;
+  }
+
+  /* Painel de status do JOGADOR/KAEL (canto inferior esquerdo) */
+  .player-status {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 190px;
+    background-color: rgba(10,10,14,0.9);
+    border: 1px solid #2a2a2e;
+    border-radius: 4px;
+    padding: 8px 10px;
+  }
+
+  .status-top-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .status-top-row .name {
+    color: #4ade80;
+    font-weight: bold;
+  }
+
+  .status-top-row .level {
+    color: #ccc;
+  }
+
+  .hp-bar-bg {
+    width: 100%;
+    height: 10px;
+    background-color: #222;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .hp-bar-fill {
+    height: 100%;
+    background-color: #4ade80; /* verde - controle a % via JS/inline style */
+  }
+
+  .hp-numbers {
+    text-align: right;
+    font-size: 11px;
+    color: #ccc;
+    margin-top: 4px;
+  }
+
+  /* Sprite do JOGADOR (canto inferior esquerdo, sobre a cena) */
+  .player-sprite {
+    position: absolute;
+    bottom: 100px;
+    left: 90px;
+    width: 200px;
+    /*
+      IMAGEM DO PERSONAGEM KAEL
+      Substitua a url abaixo pelo caminho do sprite do Kael.
+      Exemplo: background-image: url('imagens/kael.png');
+    */
+    height: 150px;
+    background-image: url('zkael.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom;
+  }
+
+  /* Sprite do INIMIGO (canto superior direito, sobre a cena) */
+  .enemy-sprite {
+    position: absolute;
+    bottom: 40px;
+    right: 60px;
+    width: 130px;
+    height: 130px;
+    /*
+      IMAGEM DO INIMIGO
+      Substitua a url abaixo pelo caminho do sprite do inimigo.
+      Exemplo: background-image: url('imagens/inimigo.png');
+    */
+    background-image: url('zinimigo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom;
+  }
+
+  /* ======================================================
+     PAINEL INFERIOR: TEXTO + MENU DE AÇÕES
+     ====================================================== */
+  .bottom-panel {
+    display: flex;
+    background-color: #0c0c10;
+    border-top: 1px solid #2a2a2e;
+  }
+
+  .dialogue-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #7dd3fc;
+    font-size: 15px;
+    border-right: 1px solid #2a2a2e;
+  }
+
+  .actions-menu {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background-color: #2a2a2e;
+  }
+
+  .action-btn {
+    background-color: #0c0c10;
+    color: #666;
+    border: none;
+    padding: 18px 20px;
+    text-align: left;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.15s ease;
+  }
+
+  .action-btn.enabled {
+    color: #4ade80;
+  }
+
+  .action-btn.enabled:hover {
+    background-color: #16161a;
+  }
+
+  .action-btn .arrow {
+    visibility: hidden;
+  }
+
+  .action-btn.enabled .arrow {
+    visibility: visible;
+  }
+
+  /* Botão vermelho (VOLTAR) usado no submenu de ataques */
+  .action-btn.back-btn {
+    color: #f87171;
+  }
+
+  .action-btn.back-btn:hover {
+    background-color: #2a1414;
+  }
+
+  /* Esconde o submenu de ataques por padrão */
+  .hidden {
+    display: none;
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="battle-container">
+
+    <!-- CABEÇALHO -->
+    <div class="battle-header">
+      <span class="title">BATTLE_SCREEN</span>
+      <span class="icons">PAUSE ⚙</span>
+    </div>
+
+    <!-- CENA DE BATALHA -->
+    <div class="battle-scene">
+
+      <!-- STATUS DO INIMIGO -->
+      <div class="enemy-status">
+        <div class="status-top-row">
+          <span class="name">ENEMY</span>
+          <span class="level">LV. 42</span>
+        </div>
+        <div class="hp-bar-bg">
+          <div class="hp-bar-fill" style="width: 100%;"></div>
+        </div>
+        <div class="hp-numbers">200/200</div>
+      </div>
+
+      <!-- SPRITE DO INIMIGO -->
+      <div class="enemy-sprite"></div>
+
+      <!-- SPRITE DO JOGADOR (KAEL) -->
+      <div class="player-sprite"></div>
+
+      <!-- STATUS DO JOGADOR -->
+      <div class="player-status">
+        <div class="status-top-row">
+          <span class="name">KAEL</span>
+          <span class="level">LV. 35</span>
+        </div>
+        <div class="hp-bar-bg">
+          <div class="hp-bar-fill" style="width: 100%;"></div>
+        </div>
+        <div class="hp-numbers">100/100</div>
+      </div>
+
+    </div>
+
+    <!-- PAINEL INFERIOR -->
+    <div class="bottom-panel">
+
+      <!-- TEXTO DE DIÁLOGO -->
+      <div class="dialogue-box" id="dialogueBox">
+        O que Kael vai fazer?
+      </div>
+
+      <!-- MENU PRINCIPAL DE AÇÕES -->
+      <div class="actions-menu" id="mainMenu">
+        <button class="action-btn enabled" id="btnAtacar">
+          <span class="arrow">▶</span> ATACAR
+        </button>
+        <button class="action-btn">
+          <span class="arrow">▶</span> CURAR
+        </button>
+        <button class="action-btn">
+          <span class="arrow">▶</span> FUGIR
+        </button>
+        <button class="action-btn enabled">
+          <span class="arrow">▶</span> PASSAR A VEZ
+        </button>
+      </div>
+
+      <!-- SUBMENU DE ATAQUES (aparece ao clicar em ATACAR) -->
+      <div class="actions-menu hidden" id="attackMenu">
+        <button class="action-btn enabled">
+          <span class="arrow">▶</span> Sobrecarga Ômega
+        </button>
+        <button class="action-btn enabled">
+          <span class="arrow">▶</span> Facas Múltiplas
+        </button>
+        <button class="action-btn enabled">
+          <span class="arrow">▶</span> Veneno
+        </button>
+        <button class="action-btn back-btn enabled" id="btnVoltar">
+          <span class="arrow">▶</span> VOLTAR
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+<script>
+  // Referências dos elementos
+  const btnAtacar = document.getElementById('btnAtacar');
+  const btnVoltar = document.getElementById('btnVoltar');
+  const mainMenu = document.getElementById('mainMenu');
+  const attackMenu = document.getElementById('attackMenu');
+  const dialogueBox = document.getElementById('dialogueBox');
+
+  // Clique em ATACAR -> mostra submenu de ataques
+  btnAtacar.addEventListener('click', () => {
+    mainMenu.classList.add('hidden');
+    attackMenu.classList.remove('hidden');
+    dialogueBox.textContent = 'Selecione uma habilidade...';
+  });
+
+  // Clique em VOLTAR -> retorna ao menu principal
+  btnVoltar.addEventListener('click', () => {
+    attackMenu.classList.add('hidden');
+    mainMenu.classList.remove('hidden');
+    dialogueBox.textContent = 'O que Kael vai fazer?';
+  });
+</script>
+</body>
+</html>
