@@ -1,0 +1,202 @@
+/* Definição de Variáveis e Paleta de Cores */
+:root {
+  --bg-main: #050505;
+  --bg-card: #101014;
+  --bg-input: #0c0c10;
+  --border-color: #2a2a2e;
+  --border-hover: #4ade80;
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+
+  --accent-green: #4ade80;
+  --accent-glow: rgba(74, 222, 128, 0.25);
+
+  --transition-speed: 0.25s;
+}
+
+/* Reset de Margens e Box-Sizing */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Courier New', monospace;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* Wrapper de Alinhamento Central */
+.login-wrapper {
+  width: 100%;
+  max-width: 560px;
+}
+
+/* Card do Login */
+.login-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Cabeçalho */
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.brand-highlight {
+  color: var(--accent-green);
+  text-shadow: 0 0 12px var(--accent-glow);
+}
+
+.login-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Formulário e Inputs */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.linha-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.linha-form label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.linha-form input {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-main);
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+  width: 100%;
+}
+
+/* Efeito de Foco nos Inputs */
+.linha-form input:focus {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Grade com os cards de personagem */
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+}
+
+.char-card {
+  background-color: var(--bg-input);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.9rem 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-speed) ease, background-color var(--transition-speed) ease;
+}
+
+.char-card:hover {
+  background-color: #16161a;
+}
+
+/* Classe aplicada via JS quando o personagem é selecionado */
+.char-card.selected {
+  border-color: var(--accent-green);
+  background-color: rgba(74, 222, 128, 0.08);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.char-avatar {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 0.5rem;
+  background-color: #17171b;
+  border-radius: 6px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-green);
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.char-name {
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+
+.char-stats {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Botão de Envio */
+.btn-submit {
+  background-color: transparent;
+  border: 1px solid var(--accent-green);
+  border-radius: 8px;
+  color: var(--accent-green);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-speed) ease;
+  margin-top: 0.5rem;
+}
+
+.btn-submit:hover {
+  background-color: rgba(74, 222, 128, 0.08);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.btn-submit:active {
+  background-color: rgba(74, 222, 128, 0.15);
+  transform: scale(0.98);
+}
+
+/* Estilo do botão quando ainda não pode ser usado (falta nickname/personagem) */
+.btn-submit.desabilitado {
+  border-color: var(--border-color);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}

@@ -10,7 +10,7 @@ def escolher_personagem():
         titulo("ESCOLHA SEU PERSONAGEM")
 
         print("1 - Kael")
-        print("2 -   Lyra")
+        print("2 - Lyra")
         print("3 - Armstrong")
         print("0 - Sair do jogo")
 

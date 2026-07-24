@@ -1,0 +1,252 @@
+/* Variáveis de Tema (mesma linha visual da tela de login) */
+:root {
+    --bg-dark: #050505;
+    --card-bg: #101014;
+    --card-bg-2: #0c0c10;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-green: #4ade80;
+    --accent-blue: #7dd3fc;
+    --border-color: #2a2a2e;
+    --danger: #f87171;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+/* Cabeçalho */
+.header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.header .highlight {
+    color: var(--accent-green);
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+}
+
+.header p {
+    color: var(--text-secondary);
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+}
+
+/* Cards */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+/* ------------------ CENA DE BATALHA ------------------ */
+.cena-card {
+    padding: 0;
+}
+
+.cena {
+    position: relative;
+    height: 320px;
+    background-image: url('zpixel_art_fundo.png');
+    background-size: cover;
+    background-position: center;
+    background-color: #3a7bd5;
+}
+
+.status-box {
+    position: absolute;
+    width: 190px;
+    background-color: rgba(10, 10, 14, 0.9);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+.status-inimigo {
+    top: 20px;
+    right: 20px;
+}
+
+.status-jogador {
+    bottom: 20px;
+    left: 20px;
+}
+
+.status-linha-topo {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.status-nome {
+    color: var(--accent-green);
+    font-weight: bold;
+}
+
+.barra-vida-fundo {
+    width: 100%;
+    height: 10px;
+    background-color: #222;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.barra-vida-preenchida {
+    height: 100%;
+    width: 100%;
+    background-color: var(--accent-green);
+    transition: width 0.3s ease;
+}
+
+.barra-vida-numero {
+    text-align: right;
+    font-size: 11px;
+    color: #ccc;
+    margin-top: 4px;
+}
+
+.sprite {
+    position: absolute;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom;
+}
+
+.sprite-jogador {
+    bottom: 90px;
+    left: 90px;
+    width: 200px;
+    height: 150px;
+}
+
+.sprite-inimigo {
+    bottom: 30px;
+    right: 60px;
+    width: 130px;
+    height: 130px;
+    background-image: url('zinimigo.png');
+}
+
+/* Painel de histórico: translúcido, altura fixa (não cresce) */
+.historico-painel {
+    position: relative;
+    background-color: rgba(12, 12, 16, 0.55);
+    backdrop-filter: blur(2px);
+    border-top: 1px solid rgba(42, 42, 46, 0.7);
+    padding: 8px 16px;
+    height: 78px;
+    overflow: hidden;
+}
+
+.historico-titulo {
+    font-size: 10px;
+    color: rgba(150, 150, 150, 0.8);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.historico-lista {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    height: 52px;
+    overflow: hidden;
+}
+
+.historico-lista li {
+    font-size: 12px;
+    color: rgba(200, 200, 200, 0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* linha mais recente do histórico (última da lista) fica destacada */
+.historico-lista li:last-child {
+    color: var(--accent-blue);
+}
+
+/* ------------------ PAINEL DE AÇÕES ------------------ */
+.acoes-card {
+    display: flex;
+    padding: 0;
+}
+
+.dialogo-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--accent-blue);
+    font-size: 15px;
+    border-right: 1px solid var(--border-color);
+}
+
+.menu-acoes {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background-color: var(--border-color);
+}
+
+.btn-acao {
+    background-color: var(--card-bg-2);
+    color: #555;
+    border: none;
+    padding: 18px 20px;
+    text-align: left;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: not-allowed;
+    transition: background-color 0.15s ease;
+}
+
+.btn-acao.habilitado {
+    color: var(--accent-green);
+    cursor: pointer;
+}
+
+.btn-acao.habilitado:hover {
+    background-color: #16161a;
+}
+
+.btn-voltar {
+    color: var(--danger) !important;
+}
+
+.btn-voltar:hover {
+    background-color: #2a1414;
+}
+
+/* esconde o submenu de ataque por padrão */
+.escondido {
+    display: none;
+}

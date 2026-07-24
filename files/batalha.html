@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CERCO - Batalha</title>
+    <link rel="stylesheet" href="batalha.css">
+</head>
+<body>
+    <main class="container">
+        <header class="header">
+            <h1>Sistema <span class="highlight">CERCO</span></h1>
+            <p>Um inimigo apareceu! Escolha sua ação.</p>
+        </header>
+
+        <section class="card cena-card">
+
+            <!-- CENA DE BATALHA: fundo + sprites + barras de vida -->
+            <div class="cena">
+
+                <!-- STATUS DO INIMIGO -->
+                <div class="status-box status-inimigo">
+                    <div class="status-linha-topo">
+                        <span class="status-nome">INIMIGO</span>
+                    </div>
+                    <div class="barra-vida-fundo">
+                        <div class="barra-vida-preenchida" id="barraInimigo"></div>
+                    </div>
+                    <div class="barra-vida-numero" id="numeroInimigo">0/0</div>
+                </div>
+
+                <div class="sprite sprite-inimigo" id="spriteInimigo"></div>
+                <div class="sprite sprite-jogador" id="spriteJogador"></div>
+
+                <!-- STATUS DO JOGADOR -->
+                <div class="status-box status-jogador">
+                    <div class="status-linha-topo">
+                        <span class="status-nome" id="nomeJogador">JOGADOR</span>
+                    </div>
+                    <div class="barra-vida-fundo">
+                        <div class="barra-vida-preenchida" id="barraJogador"></div>
+                    </div>
+                    <div class="barra-vida-numero" id="numeroJogador">0/0</div>
+                </div>
+
+            </div>
+
+            <!-- HISTÓRICO DE AÇÕES: translúcido, altura fixa, texto novo empurra o antigo pra cima -->
+            <div class="historico-painel">
+                <div class="historico-titulo">HISTÓRICO</div>
+                <ul class="historico-lista" id="historicoLista"></ul>
+            </div>
+
+        </section>
+
+        <section class="card acoes-card">
+
+            <div class="dialogo-box" id="dialogoBox">O que você vai fazer?</div>
+
+            <!-- MENU PRINCIPAL -->
+            <div class="menu-acoes" id="menuPrincipal">
+                <button class="btn-acao habilitado" id="btnAtacar">Atacar</button>
+                <button class="btn-acao" id="btnCurar">Curar</button>
+                <button class="btn-acao habilitado" id="btnFugir">Fugir</button>
+                <button class="btn-acao habilitado" id="btnPassar">Passar a Vez</button>
+            </div>
+
+            <!-- SUBMENU DE ATAQUES -->
+            <div class="menu-acoes escondido" id="menuAtaque">
+                <button class="btn-acao habilitado" id="btnSobrecarga">Sobrecarga Ômega</button>
+                <button class="btn-acao habilitado" id="btnFacas">Facas Múltiplas</button>
+                <button class="btn-acao habilitado" id="btnVeneno">Veneno</button>
+                <button class="btn-acao btn-voltar habilitado" id="btnVoltar">Voltar</button>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="batalha.js"></script>
+</body>
+</html>

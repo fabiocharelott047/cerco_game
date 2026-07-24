@@ -1,6 +1,6 @@
 import time
 import random
-
+#
 from utils import escrever, titulo, status_jogador, status_inimigo
 from personagens import escolher_personagem
 from efeitos import criar_efeitos, aplicar_efeitos
