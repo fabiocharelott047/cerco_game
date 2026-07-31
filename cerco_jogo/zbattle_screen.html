@@ -192,15 +192,17 @@
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    background-color: #2a2a2e;
+    gap: 8px; /* espaço entre os botões, já que agora eles são "soltos" e arredondados */
+    background-color: #0c0c10;
+    padding: 10px;
   }
 
   .action-btn {
-    background-color: #0c0c10;
+    background-color: #16161a;
     color: #666;
-    border: none;
-    padding: 18px 20px;
+    border: 1px solid #2a2a2e;
+    border-radius: 10px; /* <-- cantos arredondados dos botões */
+    padding: 16px 18px;
     text-align: left;
     font-size: 13px;
     letter-spacing: 1px;
@@ -208,15 +210,27 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: background-color 0.15s ease;
+    /* transition suave para background, borda e escala (efeito de "pop") */
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
   }
 
   .action-btn.enabled {
     color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.35);
   }
 
+  /* Animação ao passar o mouse: leve aumento de escala + brilho */
   .action-btn.enabled:hover {
-    background-color: #16161a;
+    background-color: #1c2b20;
+    border-color: #4ade80;
+    transform: scale(1.03);
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.35);
+  }
+
+  /* Animação ao clicar: leve "afundada" do botão */
+  .action-btn.enabled:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
   }
 
   .action-btn .arrow {
@@ -230,15 +244,34 @@
   /* Botão vermelho (VOLTAR) usado no submenu de ataques */
   .action-btn.back-btn {
     color: #f87171;
+    border-color: rgba(248, 113, 113, 0.35);
   }
 
   .action-btn.back-btn:hover {
     background-color: #2a1414;
+    border-color: #f87171;
+    box-shadow: 0 0 12px rgba(248, 113, 113, 0.35);
   }
 
   /* Esconde o submenu de ataques por padrão */
   .hidden {
     display: none;
+  }
+
+  /* Animação de entrada aplicada via JS (classe adicionada ao trocar de menu) */
+  @keyframes menuFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .menu-animate {
+    animation: menuFadeIn 0.25s ease;
   }
 
 </style>
@@ -340,17 +373,23 @@
   const attackMenu = document.getElementById('attackMenu');
   const dialogueBox = document.getElementById('dialogueBox');
 
-  // Clique em ATACAR -> mostra submenu de ataques
+  // Clique em ATACAR -> mostra submenu de ataques (com animação de entrada)
   btnAtacar.addEventListener('click', () => {
     mainMenu.classList.add('hidden');
     attackMenu.classList.remove('hidden');
+    attackMenu.classList.remove('menu-animate');
+    void attackMenu.offsetWidth; // reinicia a animação
+    attackMenu.classList.add('menu-animate');
     dialogueBox.textContent = 'Selecione uma habilidade...';
   });
 
-  // Clique em VOLTAR -> retorna ao menu principal
+  // Clique em VOLTAR -> retorna ao menu principal (com animação de entrada)
   btnVoltar.addEventListener('click', () => {
     attackMenu.classList.add('hidden');
     mainMenu.classList.remove('hidden');
+    mainMenu.classList.remove('menu-animate');
+    void mainMenu.offsetWidth; // reinicia a animação
+    mainMenu.classList.add('menu-animate');
     dialogueBox.textContent = 'O que Kael vai fazer?';
   });
 </script>

@@ -1,0 +1,362 @@
+/* ======================================================
+   RESET E FONTE
+   ====================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Cambria', monospace;
+}
+
+body {
+  background-color: #050505;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ======================================================
+   TELA DE SELEÇÃO DE PERSONAGEM
+   ====================================================== */
+.selection-container {
+  width: 850px;
+  background-color: #101014;
+  border: 1px solid #2a2a2e;
+  border-radius: 8px;
+  padding: 30px;
+  color: #4ade80;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
+}
+
+.selection-container h1 {
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+}
+
+.selection-container input {
+  background-color: #16161a;
+  border: 1px solid #2a2a2e;
+  border-radius: 8px;
+  color: #cdeedd;
+  padding: 10px 14px;
+  font-size: 14px;
+  width: 260px;
+  margin-bottom: 25px;
+  outline: none;
+}
+
+.selection-container input:focus {
+  border-color: #4ade80;
+}
+
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.character-card {
+  background-color: #16161a;
+  border: 1px solid #2a2a2e;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  color: #ccc;
+  transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.character-card:hover {
+  transform: scale(1.04);
+  border-color: #4ade80;
+  box-shadow: 0 0 14px rgba(74, 222, 128, 0.35);
+}
+
+.character-card .card-sprite {
+  width: 110%;
+  height: 150px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-bottom: 5px;
+}
+
+.character-card .card-name {
+  font-weight: bold;
+  color: #4ade80;
+  margin-bottom: 10px;
+}
+
+.character-card .card-desc {
+  font-size: 11px;
+  color: #888;
+}
+
+/* ======================================================
+   CONTAINER PRINCIPAL DA BATALHA
+   ====================================================== */
+.battle-container {
+  width: 850px;
+  background-color: #101014;
+  border: 1px solid #2a2a2e;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
+}
+
+/* ------------------ TOPO / HEADER ------------------ */
+.battle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: #0c0c10;
+  border-bottom: 1px solid #2a2a2e;
+}
+
+.battle-header .title {
+  color: #4ade80;
+  font-weight: bold;
+  letter-spacing: 1px;
+  font-size: 14px;
+}
+
+.battle-header .icons {
+  color: #888;
+  font-size: 14px;
+}
+
+/* ------------------ ÁREA DA CENA (BACKGROUND) ------------------ */
+.battle-scene {
+  position: relative;
+  height: 340px;
+  /* Imagem de fundo do cenário (arquivo zpixel_art_fundo.png) */
+  background-image: url('zpixel_art_fundo.png');
+  background-size: cover;
+  background-position: center;
+  background-color: #3a7bd5; /* cor reserva caso a imagem não carregue */
+}
+
+.enemy-status {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 190px;
+  background-color: rgba(10,10,14,0.9);
+  border: 1px solid #2a2a2e;
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+.player-status {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 190px;
+  background-color: rgba(10,10,14,0.9);
+  border: 1px solid #2a2a2e;
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+.status-top-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.status-top-row .name {
+  color: #4ade80;
+  font-weight: bold;
+}
+
+.hp-bar-bg {
+  width: 100%;
+  height: 10px;
+  background-color: #222;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  background-color: #4ade80;
+  transition: width 0.3s ease; /* barra "desliza" ao mudar de valor */
+}
+
+.hp-numbers {
+  text-align: right;
+  font-size: 11px;
+  color: #ccc;
+  margin-top: 4px;
+}
+
+/* Sprite do JOGADOR (canto inferior esquerdo, sobre a cena) */
+.player-sprite {
+  position: absolute;
+  bottom: 75px;
+  left: 50px;
+  width: 250px;
+  height: 200px;
+  /* A imagem é definida dinamicamente pelo main.js conforme o personagem escolhido */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom;
+}
+
+/* Sprite do INIMIGO (canto superior direito, sobre a cena) */
+.enemy-sprite {
+  position: absolute;
+  bottom: 5px;
+  right: 45px;
+  width: 275px;
+  height: 275px;
+  /* Imagem do inimigo (arquivo zinimigo.png) */
+  background-image: url('zinimigo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom;
+}
+
+/* ======================================================
+   PAINEL INFERIOR: LOG + MENU DE AÇÕES
+   ====================================================== */
+.bottom-panel {
+  display: flex;
+  background-color: #0c0c10;
+  border-top: 1px solid #2a2a2e;
+  height: 210px;
+}
+
+.dialogue-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  border-right: 1px solid #2a2a2e;
+  overflow: hidden;
+}
+
+#dialogueLabel {
+  color: #7dd3fc;
+  font-size: 14px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+/* Log de mensagens do combate (equivalente aos vários print() do Python) */
+#battleLog {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 12px;
+  color: #9fd8b8;
+  line-height: 1.5;
+}
+
+#battleLog .log-titulo {
+  color: #4ade80;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+/* Barra de rolagem discreta */
+#battleLog::-webkit-scrollbar {
+  width: 6px;
+}
+#battleLog::-webkit-scrollbar-thumb {
+  background-color: #2a2a2e;
+  border-radius: 3px;
+}
+
+.actions-menu {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background-color: #0c0c10;
+  padding: 10px;
+  align-content: start;
+}
+
+.action-btn {
+  background-color: #16161a;
+  color: #666;
+  border: 1px solid #2a2a2e;
+  border-radius: 10px;
+  padding: 16px 18px;
+  text-align: left;
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.action-btn.enabled {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+.action-btn.enabled:hover {
+  background-color: #1c2b20;
+  border-color: #4ade80;
+  transform: scale(1.03);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.35);
+}
+
+.action-btn.enabled:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+}
+
+.action-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.action-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.action-btn .arrow {
+  visibility: hidden;
+}
+
+.action-btn.enabled .arrow {
+  visibility: visible;
+}
+
+.action-btn.back-btn {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.action-btn.back-btn:hover {
+  background-color: #2a1414;
+  border-color: #f87171;
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.35);
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-animate {
+  animation: menuFadeIn 0.25s ease;
+}

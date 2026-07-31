@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>CERCO - Battle Screen</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ================================================
+       TELA DE SELEÇÃO DE PERSONAGEM (equivalente a personagens.py)
+       ================================================ -->
+  <div class="selection-container" id="selectionScreen">
+    <h1>CERCO THE GAME</h1>
+    <input type="text" id="nicknameInput" placeholder="Digite seu nickname">
+
+    <div class="character-grid">
+      <div class="character-card" data-personagem="kael">
+        <!-- Sprite do Kael (arquivo zkael.png) -->
+        <div class="card-sprite" style="background-image: url('zKael.png');"></div>
+        <div class="card-name">Kael</div>
+        <div class="card-desc">Corte Básico / Estocadas Múltiplas / Ferida Profunda</div>
+      </div>
+
+      <div class="character-card" data-personagem="lyra">
+        <!-- Sem sprite próprio ainda: troque a imagem abaixo quando tiver -->
+        <div class="card-sprite" style="background-image: url('zLyra.png');"></div>
+        <div class="card-name">Lyra</div>
+        <div class="card-desc">Eco Neural / Ruído Quântico / Espiral Fantasma</div>
+      </div>
+
+      <div class="character-card" data-personagem="armstrong">
+        <!-- Sem sprite próprio ainda: troque a imagem abaixo quando tiver -->
+        <div class="card-sprite" style="background-image: url('zArmstrong.png');"></div>
+        <div class="card-name">Armstrong</div>
+        <div class="card-desc">Golpe de Guarda / Guarda Costas / Marca da Execução</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================
+       TELA DE BATALHA (equivalente ao loop principal de main.py)
+       ================================================ -->
+  <div class="battle-container hidden" id="battleContainer">
+
+    <div class="battle-header">
+      <span class="title">CERCO_THE_GAME</span>
+      <span class="icons">⚙ ❚❚</span>
+    </div>
+
+    <div class="battle-scene">
+
+      <div class="enemy-status">
+        <div class="status-top-row">
+          <span class="name">INIMIGO</span>
+        </div>
+        <div class="hp-bar-bg">
+          <div class="hp-bar-fill" id="enemyHpFill" style="width: 100%;"></div>
+        </div>
+        <div class="hp-numbers" id="enemyHpNumbers">0/0</div>
+      </div>
+
+      <div class="enemy-sprite"></div>
+
+      <!-- O background-image deste elemento é definido pelo main.js conforme o personagem -->
+      <div class="player-sprite" id="playerSprite"></div>
+
+      <div class="player-status">
+        <div class="status-top-row">
+          <span class="name" id="playerName">-</span>
+        </div>
+        <div class="hp-bar-bg">
+          <div class="hp-bar-fill" id="playerHpFill" style="width: 100%;"></div>
+        </div>
+        <div class="hp-numbers" id="playerHpNumbers">0/0</div>
+      </div>
+
+    </div>
+
+    <div class="bottom-panel">
+
+      <div class="dialogue-box">
+        <div id="dialogueLabel">O que você vai fazer?</div>
+        <div id="battleLog"></div>
+      </div>
+
+      <!-- MENU PRINCIPAL DE AÇÕES -->
+      <div class="actions-menu" id="mainMenu">
+        <button class="action-btn enabled" id="btnAtacar">
+          <span class="arrow">▶</span> ATACAR
+        </button>
+        <button class="action-btn enabled" id="btnCurar">
+          <span class="arrow">▶</span> CURAR
+        </button>
+        <button class="action-btn enabled" id="btnFugir">
+          <span class="arrow">▶</span> FUGIR
+        </button>
+        <button class="action-btn enabled" id="btnPassarVez">
+          <span class="arrow">▶</span> PASSAR A VEZ
+        </button>
+      </div>
+
+      <!-- SUBMENU DE ATAQUES (montado dinamicamente pelo main.js/utils.js) -->
+      <div class="actions-menu hidden" id="attackMenu">
+        <!-- Os 3 botões de ataque do personagem são inseridos aqui via JS -->
+        <button class="action-btn back-btn enabled" id="btnVoltar">
+          <span class="arrow">▶</span> VOLTAR
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================================================
+       SCRIPTS - a ordem importa: config antes de tudo,
+       depois utils, efeitos, common, ataques e por fim
+       personagens/main (que dependem dos anteriores).
+       ================================================ -->
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="efeitos.js"></script>
+  <script src="common.js"></script>
+  <script src="ataques.js"></script>
+  <script src="main.js"></script>
+  <script src="personagens.js"></script>
+
+</body>
+</html>
