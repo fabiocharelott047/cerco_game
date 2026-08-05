@@ -1,13 +1,11 @@
 // Referência da caixa de log (equivalente aos vários print() do Python)
 const logBox = document.getElementById("battleLog");
 
-// ------------------------------------------------------
 // FILA DE ESCRITA - reproduz o efeito letra por letra do
 // escrever() do Python (que usava time.sleep entre caracteres).
 // Tudo que entra aqui (escrever ou titulo) é exibido em ORDEM,
 // uma linha de cada vez, mesmo que várias chamadas aconteçam
 // no mesmo instante do código.
-// ------------------------------------------------------
 const filaDeEscrita = [];
 let escrevendoNoLog = false;
 

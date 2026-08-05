@@ -7,9 +7,7 @@
 </head>
 <body>
 
-  <!-- ================================================
-       TELA DE SELEÇÃO DE PERSONAGEM (equivalente a personagens.py)
-       ================================================ -->
+  <!-- TELA DE SELEÇÃO DE PERSONAGEM (equivalente a personagens.py) -->
   <div class="selection-container" id="selectionScreen">
     <h1>CERCO THE GAME</h1>
     <input type="text" id="nicknameInput" placeholder="Digite seu nickname">
@@ -38,9 +36,7 @@
     </div>
   </div>
 
-  <!-- ================================================
-       TELA DE BATALHA (equivalente ao loop principal de main.py)
-       ================================================ -->
+  <!-- TELA DE BATALHA (equivalente ao loop principal de main.py)-->
   <div class="battle-container hidden" id="battleContainer">
 
     <div class="battle-header">
@@ -98,6 +94,9 @@
         <button class="action-btn enabled" id="btnPassarVez">
           <span class="arrow">▶</span> PASSAR A VEZ
         </button>
+        <button class="action-btn hidden" id="btnReiniciar">
+          <span class="arrow">▶</span> REINICIAR
+        </button>
       </div>
 
       <!-- SUBMENU DE ATAQUES (montado dinamicamente pelo main.js/utils.js) -->
@@ -112,11 +111,8 @@
 
   </div>
 
-  <!-- ================================================
-       SCRIPTS - a ordem importa: config antes de tudo,
-       depois utils, efeitos, common, ataques e por fim
-       personagens/main (que dependem dos anteriores).
-       ================================================ -->
+  <!--SCRIPTS - a ordem importa: config antes de tudo,depois utils, efeitos,
+   common, ataques e por fimpersonagens/main (que dependem dos anteriores).-->
   <script src="config.js"></script>
   <script src="utils.js"></script>
   <script src="efeitos.js"></script>

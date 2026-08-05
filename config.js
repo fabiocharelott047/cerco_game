@@ -15,18 +15,18 @@ const CONFIG = {
   LYRA_DMG: randInt(30, 50),
 
   ARMSTRONG_HP: randInt(220, 350),
-  ARMSTRONG_DMG: randInt(27, 70),
+  ARMSTRONG_DMG: randInt(25, 70),
 
   // Inimigo
-  INIMIGO_HP: randInt(120, 350),
-  INIMIGO_DANO: randInt(10, 50),
+  INIMIGO_HP: randInt(200, 350),
+  INIMIGO_DANO: randInt(30, 70),
 
   // Kael
   KAEL_ESTOCADAS_HIT: [5, 15], 
   KAEL_FERIDA_PROFUNDA_TURNOS: 3,
 
   // Lyra
-  LYRA_RUIDO_QUANTICO_HIT: [8, 18], 
+  LYRA_RUIDO_QUANTICO_HIT: [8, 20], 
   LYRA_ESPIRAL_TURNOS: 3,
 
   // Armstrong

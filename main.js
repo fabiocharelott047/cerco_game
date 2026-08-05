@@ -35,7 +35,12 @@ function iniciarJogo(chave, nickname) {
 
   titulo("CERCO");
   escrever(`Bem-vindo, ${nickname}.`);
-  escrever("Sistema CERCO inicializado.");
+  escrever("Hoje as muralhas ainda resistem, mas as forças inimigas avançam.")
+  escrever("Seu dever é enfrentar todo inimigo que ousar romper a defesa do reino.")
+  escrever("...")
+  escrever("Que sua espada permaneça firme.")
+  escrever("A batalha começa agora.");
+  escrever("...")
   escrever("Prepare-se para o combate.");
 
   titulo("PERSONAGEM SELECIONADO");
@@ -140,6 +145,7 @@ function finalizarAcao(fugiu) {
 
 function fimDeJogo(resultado) {
   habilitarBotoesAcao(false);
+  document.getElementById("btnReiniciar").classList.remove("hidden");
 
   if (resultado === "fuga") {
     titulo("FUGA BEM-SUCEDIDA");
@@ -193,4 +199,8 @@ function configurarBotoesAcao() {
   document.getElementById("btnCurar").addEventListener("click", executarCurar);
   document.getElementById("btnFugir").addEventListener("click", executarFugir);
   document.getElementById("btnPassarVez").addEventListener("click", executarPassarVez);
+
+  document.getElementById("btnReiniciar").addEventListener("click", () => {
+    location.reload();
+  });
 }
