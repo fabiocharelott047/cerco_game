@@ -363,3 +363,62 @@ body {
 .menu-animate {
   animation: menuFadeIn 0.25s ease;
 }
+
+/* ======================================================
+   AJUSTES PARA TELAS PEQUENAS (CELULAR)
+   ====================================================== */
+@media (max-width: 600px) {
+
+  /* Grade de personagens: 1 coluna em vez de 3 */
+  .character-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Cenário de batalha mais baixo */
+  .battle-scene {
+    height: 240px;
+  }
+
+  /* Cartões de status do inimigo e do jogador, menores */
+  .enemy-status,
+  .player-status {
+    width: 130px;
+    padding: 6px 8px;
+  }
+
+  /* Sprite do jogador reduzido e reposicionado para não sobrepor o inimigo */
+  .player-sprite {
+    width: 110px;
+    height: 90px;
+    left: 10px;
+    bottom: 55px;
+  }
+
+  /* Sprite do inimigo reduzido e reposicionado para não sobrepor o jogador */
+  .enemy-sprite {
+    width: 120px;
+    height: 120px;
+    right: 10px;
+    bottom: 5px;
+  }
+
+  /* Painel inferior: log em cima, botões embaixo (em vez de lado a lado) */
+  .bottom-panel {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .dialogue-box {
+    border-right: none;
+    border-bottom: 1px solid #2a2a2e;
+    max-height: 150px;
+  }
+
+  #battleLog {
+    font-size: 13px;
+  }
+
+  .actions-menu {
+    padding: 10px;
+  }
+}
