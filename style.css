@@ -25,7 +25,8 @@ body {
    TELA DE SELEÇÃO DE PERSONAGEM
    ====================================================== */
 .selection-container {
-  width: 850px;
+  width: 100%;
+  max-width: 850px;
   background-color: #101014;
   border: 1px solid #2a2a2e;
   border-radius: 8px;
@@ -47,7 +48,8 @@ body {
   color: #cdeedd;
   padding: 10px 14px;
   font-size: 14px;
-  width: 260px;
+  width: 100%;
+  max-width: 260px;
   margin-bottom: 25px;
   outline: none;
 }
@@ -102,7 +104,8 @@ body {
    CONTAINER PRINCIPAL DA BATALHA
    ====================================================== */
 .battle-container {
-  width: 850px;
+  width: 100%;
+  max-width: 850px;
   background-color: #101014;
   border: 1px solid #2a2a2e;
   border-radius: 8px;
