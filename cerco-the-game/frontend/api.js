@@ -1,11 +1,7 @@
-// Camada de comunicação com o back-end (Node-RED) do CERCO THE GAME
 
 const API_BASE = "http://localhost:1880";
 
-/**
- * Registra jogador + personagem + inimigo e abre uma partida.
- * Retorna { id_partida, id_personagem_jogador, id_personagem_inimigo } ou null em caso de falha.
- */
+
 async function apiIniciarPartida(dados) {
   try {
     const resp = await fetch(`${API_BASE}/api/partida/iniciar`, {
@@ -21,9 +17,6 @@ async function apiIniciarPartida(dados) {
   }
 }
 
-/**
- * Requisito 4: consulta nome, vida (atual/máxima) e itens disponíveis de um personagem.
- */
 async function apiConsultarPersonagem(idPersonagem) {
   try {
     const resp = await fetch(`${API_BASE}/api/personagem/${idPersonagem}`);
@@ -35,9 +28,6 @@ async function apiConsultarPersonagem(idPersonagem) {
   }
 }
 
-/**
- * Requisito 1: envia o status de vida dos dois personagens após cada turno.
- */
 async function apiEnviarStatusTurno(idPartida, idPersonagemJogador, hpJogador, idPersonagemInimigo, hpInimigo) {
   try {
     await fetch(`${API_BASE}/api/partida/status-turno`, {
@@ -56,9 +46,6 @@ async function apiEnviarStatusTurno(idPartida, idPersonagemJogador, hpJogador, i
   }
 }
 
-/**
- * Requisito 2: avisa o back-end qual personagem receberá dano persistente e por quantos rounds.
- */
 async function apiEnviarEfeitoPersistente(idPartida, ordemTurno, idPersonagemAlvo, turnos) {
   try {
     await fetch(`${API_BASE}/api/personagem/efeito`, {
@@ -76,9 +63,7 @@ async function apiEnviarEfeitoPersistente(idPartida, ordemTurno, idPersonagemAlv
   }
 }
 
-/**
- * Requisito 3: avisa o back-end que um item foi usado, para remover/decrementar no inventário.
- */
+
 async function apiUsarItem(idPersonagem, idItem) {
   try {
     await fetch(`${API_BASE}/api/personagem/usar-item`, {

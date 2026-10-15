@@ -138,11 +138,7 @@ function executarAtaque(numero) {
   finalizarAcao(false);
 }
 
-/**
- * Compara o estado de efeitos antes/depois do ataque e, se um efeito persistente
- * foi ativado (ferida_profunda, espiral ou marca), envia ao back-end o personagem
- * alvo (sempre o inimigo, nestes 3 casos) e por quantos turnos ele vai durar.
- */
+
 function notificarEfeitoPersistenteSeHouver(antes, depois) {
   const campos = ["ferida_profunda_turnos", "espiral_turnos", "marca_turnos"];
   campos.forEach((campo) => {
@@ -195,7 +191,7 @@ function finalizarAcao(fugiu) {
   escrever(`VIDA ${estado.nomePersonagem.toUpperCase()}: ${estado.hp}`);
   escrever(`VIDA INIMIGO: ${estado.inimigoHp}`);
 
-  // Requisito 1: após cada turno, envia o status de vida dos dois personagens
+  
   apiEnviarStatusTurno(estado.id_partida, estado.id_personagem_jogador, estado.hp, estado.id_personagem_inimigo, estado.inimigoHp);
 
   if (fugiu) {

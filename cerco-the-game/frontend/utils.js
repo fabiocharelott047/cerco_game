@@ -1,11 +1,6 @@
 // Referência da caixa de log (equivalente aos vários print() do Python)
 const logBox = document.getElementById("battleLog");
 
-// FILA DE ESCRITA - reproduz o efeito letra por letra do
-// escrever() do Python (que usava time.sleep entre caracteres).
-// Tudo que entra aqui (escrever ou titulo) é exibido em ORDEM,
-// uma linha de cada vez, mesmo que várias chamadas aconteçam
-// no mesmo instante do código.
 const filaDeEscrita = [];
 let escrevendoNoLog = false;
 
@@ -26,11 +21,7 @@ async function processarFilaDeEscrita() {
   escrevendoNoLog = false;
 }
 
-/**
- * escrever(texto, velocidade) - equivalente à função escrever() do utils.py
- * Escreve letra por letra dentro de uma <div>, com uma pequena pausa
- * entre cada caractere (velocidade em ms, igual ao time.sleep do Python).
- */
+
 function escrever(texto, velocidade = CONFIG.VELOCIDADE_PADRAO) {
   enfileirarEscrita(() => {
     return new Promise((resolve) => {
@@ -64,12 +55,7 @@ function linhaEmBranco() {
   escrever("");
 }
 
-/**
- * titulo(texto) - equivalente à função titulo() do utils.py
- * Aparece na hora (sem digitação), igual ao print() do Python usado
- * para os cabeçalhos - mas entra na mesma fila para manter a ordem
- * correta em relação às linhas que estão sendo digitadas.
- */
+
 function titulo(texto) {
   enfileirarEscrita(() => {
     return new Promise((resolve) => {
@@ -83,10 +69,7 @@ function titulo(texto) {
   });
 }
 
-/**
- * statusJogador(nome, hp, hpMax, dmg) - equivalente ao status_jogador() do utils.py
- * Atualiza os elementos visuais de HP do jogador (nome, barra e número).
- */
+
 function statusJogador(nome, hp, hpMax, dmg) {
   document.getElementById("playerName").textContent = nome;
   const pct = Math.max(0, Math.min(100, (hp / hpMax) * 100));
@@ -94,21 +77,14 @@ function statusJogador(nome, hp, hpMax, dmg) {
   document.getElementById("playerHpNumbers").textContent = `${Math.max(0, hp)}/${hpMax}`;
 }
 
-/**
- * statusInimigo(hp, hpMax, dano) - equivalente ao status_inimigo() do utils.py
- * Atualiza os elementos visuais de HP do inimigo.
- */
+
 function statusInimigo(hp, hpMax, dano) {
   const pct = Math.max(0, Math.min(100, (hp / hpMax) * 100));
   document.getElementById("enemyHpFill").style.width = pct + "%";
   document.getElementById("enemyHpNumbers").textContent = `${Math.max(0, hp)}/${hpMax}`;
 }
 
-/**
- * menuAtaques(lista) - equivalente ao menu_ataques() do utils.py
- * Em vez de imprimir "1. Nome" no terminal, monta os botões do
- * submenu de ataque dinamicamente (chamado pelo main.js).
- */
+
 function menuAtaques(lista, aoClicar) {
   const attackMenu = document.getElementById("attackMenu");
 
