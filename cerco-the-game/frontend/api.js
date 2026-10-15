@@ -1,0 +1,92 @@
+// Camada de comunicação com o back-end (Node-RED) do CERCO THE GAME
+
+const API_BASE = "http://localhost:1880";
+
+/**
+ * Registra jogador + personagem + inimigo e abre uma partida.
+ * Retorna { id_partida, id_personagem_jogador, id_personagem_inimigo } ou null em caso de falha.
+ */
+async function apiIniciarPartida(dados) {
+  try {
+    const resp = await fetch(`${API_BASE}/api/partida/iniciar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dados),
+    });
+    if (!resp.ok) throw new Error("Falha ao iniciar partida no servidor");
+    return await resp.json();
+  } catch (e) {
+    console.error("[API] iniciar partida:", e);
+    return null;
+  }
+}
+
+/**
+ * Requisito 4: consulta nome, vida (atual/máxima) e itens disponíveis de um personagem.
+ */
+async function apiConsultarPersonagem(idPersonagem) {
+  try {
+    const resp = await fetch(`${API_BASE}/api/personagem/${idPersonagem}`);
+    if (!resp.ok) throw new Error("Personagem não encontrado no servidor");
+    return await resp.json();
+  } catch (e) {
+    console.error("[API] consultar personagem:", e);
+    return null;
+  }
+}
+
+/**
+ * Requisito 1: envia o status de vida dos dois personagens após cada turno.
+ */
+async function apiEnviarStatusTurno(idPartida, idPersonagemJogador, hpJogador, idPersonagemInimigo, hpInimigo) {
+  try {
+    await fetch(`${API_BASE}/api/partida/status-turno`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_partida: idPartida,
+        id_personagem_jogador: idPersonagemJogador,
+        hp_jogador: hpJogador,
+        id_personagem_inimigo: idPersonagemInimigo,
+        hp_inimigo: hpInimigo,
+      }),
+    });
+  } catch (e) {
+    console.error("[API] status do turno:", e);
+  }
+}
+
+/**
+ * Requisito 2: avisa o back-end qual personagem receberá dano persistente e por quantos rounds.
+ */
+async function apiEnviarEfeitoPersistente(idPartida, ordemTurno, idPersonagemAlvo, turnos) {
+  try {
+    await fetch(`${API_BASE}/api/personagem/efeito`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_partida: idPartida,
+        ordem_turno: ordemTurno,
+        id_personagem_alvo: idPersonagemAlvo,
+        turnos: turnos,
+      }),
+    });
+  } catch (e) {
+    console.error("[API] efeito persistente:", e);
+  }
+}
+
+/**
+ * Requisito 3: avisa o back-end que um item foi usado, para remover/decrementar no inventário.
+ */
+async function apiUsarItem(idPersonagem, idItem) {
+  try {
+    await fetch(`${API_BASE}/api/personagem/usar-item`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_personagem: idPersonagem, id_item: idItem }),
+    });
+  } catch (e) {
+    console.error("[API] usar item:", e);
+  }
+}

@@ -1,7 +1,7 @@
 
 let estado = null;
 
-function iniciarJogo(chave, nickname) {
+async function iniciarJogo(chave, nickname) {
   const dados = escolherPersonagem(chave);
 
   // Troca a tela de seleção pela tela de batalha
@@ -10,12 +10,10 @@ function iniciarJogo(chave, nickname) {
 
   // Ajusta o sprite do jogador conforme o personagem escolhido
   const playerSprite = document.getElementById("playerSprite");
-  // OBS: só temos a imagem do Kael (zkael.png). Para Lyra/Armstrong,
-  // troque o caminho abaixo pela imagem correspondente quando tiver.
   const spritesPorPersonagem = {
     kael: "zKael.png",
-    lyra: "zLyra.png", // <-- trocar por sprite da Lyra quando disponível
-    armstrong: "zArmstrong.png", // <-- trocar por sprite do Armstrong quando disponível
+    lyra: "zLyra.png",
+    armstrong: "zArmstrong.png",
   };
   playerSprite.style.backgroundImage = `url('${spritesPorPersonagem[chave]}')`;
 
@@ -31,6 +29,10 @@ function iniciarJogo(chave, nickname) {
     inimigoDano: CONFIG.INIMIGO_DANO,
     efeitos: criarEfeitos(),
     turno: 1,
+    // IDs preenchidos após o registro no back-end (ver abaixo)
+    id_partida: null,
+    id_personagem_jogador: null,
+    id_personagem_inimigo: null,
   };
 
   titulo("CERCO");
@@ -42,6 +44,50 @@ function iniciarJogo(chave, nickname) {
   escrever("A batalha começa agora.");
   escrever("...")
   escrever("Prepare-se para o combate.");
+
+  // Integração com o back-end: registra jogador+personagens+partida
+  const emailJogador = `${nickname.toLowerCase().trim().replace(/\s+/g, "_") || "jogador"}@cerco.local`;
+  const infoPartida = await apiIniciarPartida({
+    jogador: { nome: nickname, email: emailJogador },
+    personagem: {
+      nome_batalha: dados.nome,
+      classe: "Guerreiro",
+      nivel: 1,
+      hp_maximo: dados.hp,
+      ataque_basico: dados.dmg,
+      defesa: 10,
+    },
+    inimigo: {
+      nome_batalha: "Inimigo",
+      classe: "Monstro",
+      nivel: 1,
+      hp_maximo: CONFIG.INIMIGO_HP,
+      ataque_basico: CONFIG.INIMIGO_DANO,
+      defesa: 0,
+    },
+  });
+
+  if (infoPartida && infoPartida.id_partida) {
+    estado.id_partida = infoPartida.id_partida;
+    estado.id_personagem_jogador = infoPartida.id_personagem_jogador;
+    estado.id_personagem_inimigo = infoPartida.id_personagem_inimigo;
+
+    // Requisito 4: no início da partida, consulta nome, vida e itens dos dois personagens
+    const [infoJogador, infoInimigo] = await Promise.all([
+      apiConsultarPersonagem(estado.id_personagem_jogador),
+      apiConsultarPersonagem(estado.id_personagem_inimigo),
+    ]);
+
+    if (infoJogador) {
+      estado.itensJogador = infoJogador.itens || [];
+      escrever(`Servidor confirmou: ${infoJogador.nome_batalha} - ${infoJogador.hp_atual}/${infoJogador.hp_maximo} HP.`);
+    }
+    if (infoInimigo) {
+      escrever(`Servidor confirmou: ${infoInimigo.nome_batalha} - ${infoInimigo.hp_atual}/${infoInimigo.hp_maximo} HP.`);
+    }
+  } else {
+    escrever("Aviso: não foi possível conectar ao servidor. Jogando em modo local.");
+  }
 
   titulo("PERSONAGEM SELECIONADO");
   statusJogador(estado.nomePersonagem, estado.hp, estado.hpMax, estado.dmg);
@@ -77,6 +123,8 @@ function novoTurno() {
 function executarAtaque(numero) {
   habilitarBotoesAcao(false);
 
+  const efeitosAntes = { ...estado.efeitos };
+
   const funcaoAtaque = FUNCOES_ATAQUE[estado.personagem];
   const resultado = funcaoAtaque(numero, estado.dmg, estado.hp, estado.inimigoHp, estado.inimigoDano, estado.efeitos);
 
@@ -84,7 +132,24 @@ function executarAtaque(numero) {
   estado.inimigoHp = resultado.inimigoHp;
   estado.efeitos = resultado.efeitos;
 
+  // Requisito 2: se um efeito persistente novo foi aplicado neste ataque, avisa o back-end
+  notificarEfeitoPersistenteSeHouver(efeitosAntes, estado.efeitos);
+
   finalizarAcao(false);
+}
+
+/**
+ * Compara o estado de efeitos antes/depois do ataque e, se um efeito persistente
+ * foi ativado (ferida_profunda, espiral ou marca), envia ao back-end o personagem
+ * alvo (sempre o inimigo, nestes 3 casos) e por quantos turnos ele vai durar.
+ */
+function notificarEfeitoPersistenteSeHouver(antes, depois) {
+  const campos = ["ferida_profunda_turnos", "espiral_turnos", "marca_turnos"];
+  campos.forEach((campo) => {
+    if (depois[campo] > 0 && antes[campo] !== depois[campo]) {
+      apiEnviarEfeitoPersistente(estado.id_partida, estado.turno, estado.id_personagem_inimigo, depois[campo]);
+    }
+  });
 }
 
 function executarCurar() {
@@ -99,6 +164,9 @@ function executarCurar() {
     habilitarBotoesAcao(true);
     return;
   }
+
+  // Requisito 3: avisa o back-end qual item foi usado, para remover/decrementar no inventário
+  apiUsarItem(estado.id_personagem_jogador, CONFIG.ID_ITEM_POCAO);
 
   finalizarAcao(false);
 }
@@ -126,6 +194,9 @@ function finalizarAcao(fugiu) {
 
   escrever(`VIDA ${estado.nomePersonagem.toUpperCase()}: ${estado.hp}`);
   escrever(`VIDA INIMIGO: ${estado.inimigoHp}`);
+
+  // Requisito 1: após cada turno, envia o status de vida dos dois personagens
+  apiEnviarStatusTurno(estado.id_partida, estado.id_personagem_jogador, estado.hp, estado.id_personagem_inimigo, estado.inimigoHp);
 
   if (fugiu) {
     fimDeJogo("fuga");

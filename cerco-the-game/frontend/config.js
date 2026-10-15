@@ -43,4 +43,7 @@ const CONFIG = {
   POCAO_CURA: [20, 40], 
   POCOES_INICIAIS: 3,   
   CHANCE_FUGA: 0.5,     // 50% de chance de fuga
+
+  // Integração com o back-end (tabela "item" do banco) - ajuste os IDs conforme o seu banco
+  ID_ITEM_POCAO: 1,
 };
