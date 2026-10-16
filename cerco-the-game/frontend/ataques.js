@@ -1,5 +1,3 @@
- 
-
 function ataqueKael(acao, dmg, hp, inimigoHp, inimigoDano, efeitos) {
   if (acao === 1) {
     const dano = dmg;
@@ -89,7 +87,6 @@ function ataqueArmstrong(acao, dmg, hp, inimigoHp, inimigoDano, efeitos) {
   return { hp, inimigoHp, efeitos };
 }
 
-// Nomes dos 3 ataques usados para montar o submenu
 const NOMES_ATAQUES = {
   kael: ["Corte Básico", "Estocadas Múltiplas", "Ferida Profunda"],
   lyra: ["Eco Neural", "Ruído Quântico", "Espiral Fantasma"],

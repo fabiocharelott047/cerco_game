@@ -1,14 +1,11 @@
-
 let estado = null;
 
 async function iniciarJogo(chave, nickname) {
   const dados = escolherPersonagem(chave);
 
-  // Troca a tela de seleção pela tela de batalha
   document.getElementById("selectionScreen").classList.add("hidden");
   document.getElementById("battleContainer").classList.remove("hidden");
 
-  // Ajusta o sprite do jogador conforme o personagem escolhido
   const playerSprite = document.getElementById("playerSprite");
   const spritesPorPersonagem = {
     kael: "zKael.png",
@@ -29,7 +26,7 @@ async function iniciarJogo(chave, nickname) {
     inimigoDano: CONFIG.INIMIGO_DANO,
     efeitos: criarEfeitos(),
     turno: 1,
-    // IDs preenchidos após o registro no back-end (ver abaixo)
+
     id_partida: null,
     id_personagem_jogador: null,
     id_personagem_inimigo: null,
@@ -45,7 +42,6 @@ async function iniciarJogo(chave, nickname) {
   escrever("...")
   escrever("Prepare-se para o combate.");
 
-  // Integração com o back-end: registra jogador+personagens+partida
   const emailJogador = `${nickname.toLowerCase().trim().replace(/\s+/g, "_") || "jogador"}@cerco.local`;
   const infoPartida = await apiIniciarPartida({
     jogador: { nome: nickname, email: emailJogador },
@@ -56,6 +52,7 @@ async function iniciarJogo(chave, nickname) {
       hp_maximo: dados.hp,
       ataque_basico: dados.dmg,
       defesa: 10,
+      pocoes: CONFIG.POCOES_INICIAIS,
     },
     inimigo: {
       nome_batalha: "Inimigo",
@@ -72,7 +69,6 @@ async function iniciarJogo(chave, nickname) {
     estado.id_personagem_jogador = infoPartida.id_personagem_jogador;
     estado.id_personagem_inimigo = infoPartida.id_personagem_inimigo;
 
-    // Requisito 4: no início da partida, consulta nome, vida e itens dos dois personagens
     const [infoJogador, infoInimigo] = await Promise.all([
       apiConsultarPersonagem(estado.id_personagem_jogador),
       apiConsultarPersonagem(estado.id_personagem_inimigo),
@@ -81,6 +77,11 @@ async function iniciarJogo(chave, nickname) {
     if (infoJogador) {
       estado.itensJogador = infoJogador.itens || [];
       escrever(`Servidor confirmou: ${infoJogador.nome_batalha} - ${infoJogador.hp_atual}/${infoJogador.hp_maximo} HP.`);
+
+      const pocao = estado.itensJogador.find((it) => it.id_item === CONFIG.ID_ITEM_POCAO);
+      estado.efeitos.pocoes = pocao ? pocao.quantidade : 0;
+      const listaItens = estado.itensJogador.map((it) => `${it.nome} x${it.quantidade}`).join(", ");
+      escrever(`Itens disponíveis: ${listaItens || "nenhum"}.`);
     }
     if (infoInimigo) {
       escrever(`Servidor confirmou: ${infoInimigo.nome_batalha} - ${infoInimigo.hp_atual}/${infoInimigo.hp_maximo} HP.`);
@@ -95,7 +96,6 @@ async function iniciarJogo(chave, nickname) {
   titulo("UM INIMIGO APARECEU");
   statusInimigo(estado.inimigoHp, estado.inimigoHpMax, estado.inimigoDano);
 
-  // Prepara os botões de ação (ATACAR / CURAR / FUGIR / PASSAR A VEZ)
   configurarBotoesAcao();
 
   novoTurno();
@@ -107,16 +107,19 @@ function novoTurno() {
   statusInimigo(estado.inimigoHp, estado.inimigoHpMax, estado.inimigoDano);
   escrever(`Poções: ${estado.efeitos.pocoes}`);
 
-  // EFEITOS POR TURNO (equivalente a aplicar_efeitos)
+  const inimigoHpAntes = estado.inimigoHp;
   estado.inimigoHp = aplicarEfeitos(estado.efeitos, estado.inimigoHp);
   estado.inimigoHp = Math.max(0, estado.inimigoHp);
   statusInimigo(estado.inimigoHp, estado.inimigoHpMax, estado.inimigoDano);
+
+  if (estado.inimigoHp !== inimigoHpAntes) {
+    apiEnviarStatusTurno(estado.id_partida, estado.id_personagem_jogador, estado.hp, estado.id_personagem_inimigo, estado.inimigoHp);
+  }
 
   document.getElementById("dialogueLabel").textContent = `O que ${estado.nomePersonagem} vai fazer?`;
   mostrarMenu("mainMenu");
   habilitarBotoesAcao(true);
 
-  // Monta o submenu de ataques específico do personagem escolhido
   menuAtaques(NOMES_ATAQUES[estado.personagem], executarAtaque);
 }
 
@@ -132,12 +135,10 @@ function executarAtaque(numero) {
   estado.inimigoHp = resultado.inimigoHp;
   estado.efeitos = resultado.efeitos;
 
-  // Requisito 2: se um efeito persistente novo foi aplicado neste ataque, avisa o back-end
   notificarEfeitoPersistenteSeHouver(efeitosAntes, estado.efeitos);
 
   finalizarAcao(false);
 }
-
 
 function notificarEfeitoPersistenteSeHouver(antes, depois) {
   const campos = ["ferida_profunda_turnos", "espiral_turnos", "marca_turnos"];
@@ -156,17 +157,15 @@ function executarCurar() {
   estado.efeitos = resultado.efeitos;
 
   if (!resultado.valido) {
-    // Sem poções: não gasta o turno, apenas reabilita os botões (igual ao "return ... False" do Python)
+
     habilitarBotoesAcao(true);
     return;
   }
 
-  // Requisito 3: avisa o back-end qual item foi usado, para remover/decrementar no inventário
   apiUsarItem(estado.id_personagem_jogador, CONFIG.ID_ITEM_POCAO);
 
   finalizarAcao(false);
 }
-
 
 function executarPassarVez() {
   habilitarBotoesAcao(false);
@@ -191,7 +190,6 @@ function finalizarAcao(fugiu) {
   escrever(`VIDA ${estado.nomePersonagem.toUpperCase()}: ${estado.hp}`);
   escrever(`VIDA INIMIGO: ${estado.inimigoHp}`);
 
-  
   apiEnviarStatusTurno(estado.id_partida, estado.id_personagem_jogador, estado.hp, estado.id_personagem_inimigo, estado.inimigoHp);
 
   if (fugiu) {
@@ -205,13 +203,18 @@ function finalizarAcao(fugiu) {
   }
 
   estado.turno += 1;
-  // pequena pausa antes do próximo turno 
+
   setTimeout(novoTurno, 900);
 }
 
-
 function fimDeJogo(resultado) {
   habilitarBotoesAcao(false);
+
+  const idVencedor = resultado === "vitoria" ? estado.id_personagem_jogador
+                   : resultado === "derrota" ? estado.id_personagem_inimigo
+                   : null;
+  apiFinalizarPartida(estado.id_partida, idVencedor);
+
   document.getElementById("btnReiniciar").classList.remove("hidden");
 
   if (resultado === "fuga") {
@@ -229,8 +232,6 @@ function fimDeJogo(resultado) {
   document.getElementById("dialogueLabel").textContent = "Fim de jogo. Recarregue a página para jogar novamente.";
 }
 
-// CONTROLE DOS MENUS/BOTÕES
-
 function mostrarMenu(idMenuVisivel) {
   const mainMenu = document.getElementById("mainMenu");
   const attackMenu = document.getElementById("attackMenu");
@@ -242,7 +243,7 @@ function mostrarMenu(idMenuVisivel) {
 
   const menuAlvo = document.getElementById(idMenuVisivel);
   menuAlvo.classList.remove("hidden");
-  void menuAlvo.offsetWidth; // reinicia a animação de entrada
+  void menuAlvo.offsetWidth;
   menuAlvo.classList.add("menu-animate");
 }
 

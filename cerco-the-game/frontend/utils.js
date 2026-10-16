@@ -1,4 +1,3 @@
-// Referência da caixa de log (equivalente aos vários print() do Python)
 const logBox = document.getElementById("battleLog");
 
 const filaDeEscrita = [];
@@ -10,7 +9,7 @@ function enfileirarEscrita(tarefa) {
 }
 
 async function processarFilaDeEscrita() {
-  if (escrevendoNoLog) return; // já tem um processamento rodando
+  if (escrevendoNoLog) return;
   escrevendoNoLog = true;
 
   while (filaDeEscrita.length > 0) {
@@ -20,7 +19,6 @@ async function processarFilaDeEscrita() {
 
   escrevendoNoLog = false;
 }
-
 
 function escrever(texto, velocidade = CONFIG.VELOCIDADE_PADRAO) {
   enfileirarEscrita(() => {
@@ -40,7 +38,6 @@ function escrever(texto, velocidade = CONFIG.VELOCIDADE_PADRAO) {
         }
       }
 
-      // Se a linha estiver vazia (linhaEmBranco), resolve na hora
       if (texto.length === 0) {
         resolve();
       } else {
@@ -50,11 +47,9 @@ function escrever(texto, velocidade = CONFIG.VELOCIDADE_PADRAO) {
   });
 }
 
-/** Adiciona uma linha em branco no log (separador visual) */
 function linhaEmBranco() {
   escrever("");
 }
-
 
 function titulo(texto) {
   enfileirarEscrita(() => {
@@ -69,7 +64,6 @@ function titulo(texto) {
   });
 }
 
-
 function statusJogador(nome, hp, hpMax, dmg) {
   document.getElementById("playerName").textContent = nome;
   const pct = Math.max(0, Math.min(100, (hp / hpMax) * 100));
@@ -77,27 +71,23 @@ function statusJogador(nome, hp, hpMax, dmg) {
   document.getElementById("playerHpNumbers").textContent = `${Math.max(0, hp)}/${hpMax}`;
 }
 
-
 function statusInimigo(hp, hpMax, dano) {
   const pct = Math.max(0, Math.min(100, (hp / hpMax) * 100));
   document.getElementById("enemyHpFill").style.width = pct + "%";
   document.getElementById("enemyHpNumbers").textContent = `${Math.max(0, hp)}/${hpMax}`;
 }
 
-
 function menuAtaques(lista, aoClicar) {
   const attackMenu = document.getElementById("attackMenu");
 
-  // Remove botões de ataque anteriores (mantém o botão VOLTAR fixo no HTML)
   attackMenu.querySelectorAll(".attack-option").forEach((el) => el.remove());
 
-  // Cria um botão para cada ataque da lista, na ordem, antes do botão VOLTAR
   const btnVoltar = document.getElementById("btnVoltar");
   lista.forEach((nomeAtaque, index) => {
     const btn = document.createElement("button");
     btn.className = "action-btn enabled attack-option";
     btn.innerHTML = `<span class="arrow">▶</span> ${nomeAtaque}`;
-    btn.addEventListener("click", () => aoClicar(index + 1)); // 1, 2, 3...
+    btn.addEventListener("click", () => aoClicar(index + 1));
     attackMenu.insertBefore(btn, btnVoltar);
   });
 }

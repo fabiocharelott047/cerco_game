@@ -1,77 +1,62 @@
-
 const API_BASE = "http://localhost:1880";
 
-
-async function apiIniciarPartida(dados) {
+async function apiPost(rota, corpo) {
   try {
-    const resp = await fetch(`${API_BASE}/api/partida/iniciar`, {
+    const resp = await fetch(`${API_BASE}${rota}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dados),
+      body: JSON.stringify(corpo),
     });
-    if (!resp.ok) throw new Error("Falha ao iniciar partida no servidor");
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} em ${rota}`);
     return await resp.json();
   } catch (e) {
-    console.error("[API] iniciar partida:", e);
+    console.error("[API]", e);
     return null;
   }
+}
+
+function apiIniciarPartida(dados) {
+  return apiPost("/api/partida/iniciar", dados);
 }
 
 async function apiConsultarPersonagem(idPersonagem) {
   try {
     const resp = await fetch(`${API_BASE}/api/personagem/${idPersonagem}`);
-    if (!resp.ok) throw new Error("Personagem não encontrado no servidor");
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} ao consultar personagem ${idPersonagem}`);
     return await resp.json();
   } catch (e) {
-    console.error("[API] consultar personagem:", e);
+    console.error("[API]", e);
     return null;
   }
 }
 
-async function apiEnviarStatusTurno(idPartida, idPersonagemJogador, hpJogador, idPersonagemInimigo, hpInimigo) {
-  try {
-    await fetch(`${API_BASE}/api/partida/status-turno`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_partida: idPartida,
-        id_personagem_jogador: idPersonagemJogador,
-        hp_jogador: hpJogador,
-        id_personagem_inimigo: idPersonagemInimigo,
-        hp_inimigo: hpInimigo,
-      }),
-    });
-  } catch (e) {
-    console.error("[API] status do turno:", e);
-  }
+function apiEnviarStatusTurno(idPartida, idPersonagemJogador, hpJogador, idPersonagemInimigo, hpInimigo) {
+  if (!idPartida) return Promise.resolve(null);
+  return apiPost("/api/partida/status-turno", {
+    id_partida: idPartida,
+    id_personagem_jogador: idPersonagemJogador,
+    hp_jogador: hpJogador,
+    id_personagem_inimigo: idPersonagemInimigo,
+    hp_inimigo: hpInimigo,
+  });
 }
 
-async function apiEnviarEfeitoPersistente(idPartida, ordemTurno, idPersonagemAlvo, turnos) {
-  try {
-    await fetch(`${API_BASE}/api/personagem/efeito`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_partida: idPartida,
-        ordem_turno: ordemTurno,
-        id_personagem_alvo: idPersonagemAlvo,
-        turnos: turnos,
-      }),
-    });
-  } catch (e) {
-    console.error("[API] efeito persistente:", e);
-  }
+function apiEnviarEfeitoPersistente(idPartida, ordemTurno, idPersonagemAlvo, turnos) {
+  if (!idPartida) return Promise.resolve(null);
+  return apiPost("/api/personagem/efeito", {
+    id_partida: idPartida,
+    ordem_turno: ordemTurno,
+    id_personagem_alvo: idPersonagemAlvo,
+    turnos: turnos,
+  });
 }
 
+function apiUsarItem(idPersonagem, idItem) {
+  if (!idPersonagem) return Promise.resolve(null);
+  return apiPost("/api/personagem/usar-item", { id_personagem: idPersonagem, id_item: idItem });
+}
 
-async function apiUsarItem(idPersonagem, idItem) {
-  try {
-    await fetch(`${API_BASE}/api/personagem/usar-item`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_personagem: idPersonagem, id_item: idItem }),
-    });
-  } catch (e) {
-    console.error("[API] usar item:", e);
-  }
+function apiFinalizarPartida(idPartida, idVencedor) {
+  if (!idPartida) return Promise.resolve(null);
+  return apiPost("/api/partida/finalizar", { id_partida: idPartida, id_vencedor: idVencedor });
 }

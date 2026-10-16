@@ -1,9 +1,3 @@
--- Banco de dados relacional - CERCO THE GAME
-
--- create database cerco_game_bd;
-
--- criacao das tabelas
-
 drop table if exists turno cascade;
 drop table if exists partida cascade;
 drop table if exists inventario cascade;
@@ -114,25 +108,17 @@ create table turno (
     )
 );
 
-
--- carga de dados de teste
-
 insert into jogador (nome, email, data_cadastro) values
 ('Rafael Menezes',  'rafael.menezes@cerco.com',  '2026-01-10 09:15:00'),
 ('Camila Duarte',   'camila.duarte@cerco.com',   '2026-02-03 18:40:00'),
 ('Bruno Salgado',   'bruno.salgado@cerco.com',   '2026-03-21 21:05:00'),
 ('Sistema (Inimigos)', 'sistema@cerco.com', current_timestamp);
 
-insert into personagem (id_jogador, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa)
-select id_jogador, v.nome_batalha, v.classe, v.nivel, v.hp_maximo, v.hp_atual, v.ataque_basico, v.defesa
-from jogador j
-join (values
-    ('rafael.menezes@cerco.com', 'Kael',          'Guerreiro',  5, 260, 260, 38, 18),
-    ('rafael.menezes@cerco.com', 'Armstrong',     'Guerreiro',  6, 300, 300, 45, 25),
-    ('camila.duarte@cerco.com',  'Lyra',          'Feiticeira', 4, 230, 230, 42, 12),
-    ('bruno.salgado@cerco.com',  'Armstrong Jr.', 'Guerreiro',  3, 240, 180, 30, 20)
-) as v(email, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa)
-    on v.email = j.email;
+insert into personagem (id_jogador, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa) values
+((select id_jogador from jogador where email = 'rafael.menezes@cerco.com'), 'Kael',          'Guerreiro',  5, 260, 260, 38, 18),
+((select id_jogador from jogador where email = 'rafael.menezes@cerco.com'), 'Armstrong',     'Guerreiro',  6, 300, 300, 45, 25),
+((select id_jogador from jogador where email = 'camila.duarte@cerco.com'),  'Lyra',          'Feiticeira', 4, 230, 230, 42, 12),
+((select id_jogador from jogador where email = 'bruno.salgado@cerco.com'),  'Armstrong Jr.', 'Guerreiro',  3, 240, 180, 30, 20);
 
 insert into item (nome, descricao, tipo, valor_efeito) values
 ('Pocao de Cura',        'Restaura pontos de vida instantaneamente.',        'Cura Instantanea',            30),
@@ -169,9 +155,6 @@ insert into turno (id_partida, ordem_turno, id_personagem, tipo_acao, id_item, v
 (2, 5, 2, 'Passar a Vez',        null, 0),
 (2, 6, 4, 'Ataque Basico',       null, 30);
 
-
--- selecoes basicas de cada tabela
-
 select * from jogador;
 select * from personagem;
 select * from item;
@@ -179,18 +162,12 @@ select * from inventario;
 select * from partida;
 select * from turno;
 
-
--- consulta com joins, filtro, ordenacao e agregacao
--- ranking de personagens vencedores: jogador, personagem, classe,
--- total de vitorias e total de turnos executados, considerando
--- apenas personagens de nivel 4 ou mais
-
 select
     j.nome                        as jogador,
     p.nome_batalha                as personagem,
     p.classe                      as classe,
     count(distinct pa.id_partida) as total_vitorias,
-    count(t.id_turno)             as total_turnos_executados
+    count(distinct t.id_turno)    as total_turnos_executados
 from personagem p
 inner join jogador j
         on j.id_jogador = p.id_jogador
@@ -202,9 +179,6 @@ left join turno t
 where p.nivel >= 4
 group by j.nome, p.nome_batalha, p.classe
 order by total_vitorias desc, p.nome_batalha asc;
-
-
--- Atividade treino
 
 select j.nome as jogador, p.nome_batalha as personagem, p.classe as classe
 from personagem p

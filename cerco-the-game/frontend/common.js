@@ -1,4 +1,3 @@
-
 function usarPocao(hp, hpMax, efeitos) {
   if (efeitos.pocoes <= 0) {
     escrever("Você não tem mais Poções de Cura!");
@@ -14,7 +13,6 @@ function usarPocao(hp, hpMax, efeitos) {
 
   return { hp, efeitos, valido: true };
 }
-
 
 function pularVez(hp, inimigoDano) {
   hp -= inimigoDano;

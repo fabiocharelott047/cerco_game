@@ -118,8 +118,8 @@
     "id": "n2_fn",
     "type": "function",
     "z": "cerco_tab",
-    "name": "Montar INSERT jogador+personagens+partida",
-    "func": "const b = msg.payload;\nmsg.query = \"\\n  WITH j AS (\\n    INSERT INTO jogador (nome, email) VALUES ($1, $2)\\n    ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome\\n    RETURNING id_jogador\\n  ),\\n  sys AS ( SELECT id_jogador FROM jogador WHERE email = 'sistema@cerco.com' ),\\n  pj AS (\\n    INSERT INTO personagem (id_jogador, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa)\\n    SELECT j.id_jogador, $3, $4, $5, $6, $6, $7, $8 FROM j\\n    RETURNING id_personagem\\n  ),\\n  pi AS (\\n    INSERT INTO personagem (id_jogador, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa)\\n    SELECT sys.id_jogador, $9, $10, $11, $12, $12, $13, $14 FROM sys\\n    RETURNING id_personagem\\n  )\\n  INSERT INTO partida (id_desafiante, id_oponente, status)\\n  SELECT pj.id_personagem, pi.id_personagem, 'Em Andamento' FROM pj, pi\\n  RETURNING id_partida,\\n            (SELECT id_personagem FROM pj) AS id_personagem_jogador,\\n            (SELECT id_personagem FROM pi) AS id_personagem_inimigo;\\n\";\nmsg.params = [\n  b.jogador.nome, b.jogador.email,\n  b.personagem.nome_batalha, b.personagem.classe, b.personagem.nivel || 1,\n  b.personagem.hp_maximo, b.personagem.ataque_basico, b.personagem.defesa,\n  b.inimigo.nome_batalha, b.inimigo.classe || 'Monstro', b.inimigo.nivel || 1,\n  b.inimigo.hp_maximo, b.inimigo.ataque_basico, b.inimigo.defesa\n];\nreturn msg;",
+    "name": "Montar INSERT jogador+personagens+inventario+partida",
+    "func": "const b = msg.payload;\nmsg.query = [\n  \"WITH j AS (\",\n  \"  INSERT INTO jogador (nome, email) VALUES ($1, $2)\",\n  \"  ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome\",\n  \"  RETURNING id_jogador\",\n  \"),\",\n  \"sys AS (\",\n  \"  INSERT INTO jogador (nome, email) VALUES ('Sistema (Inimigos)', 'sistema@cerco.com')\",\n  \"  ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome\",\n  \"  RETURNING id_jogador\",\n  \"),\",\n  \"pj AS (\",\n  \"  INSERT INTO personagem (id_jogador, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa)\",\n  \"  SELECT j.id_jogador, $3, $4, $5, $6, $6, $7, $8 FROM j\",\n  \"  RETURNING id_personagem\",\n  \"),\",\n  \"pi AS (\",\n  \"  INSERT INTO personagem (id_jogador, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa)\",\n  \"  SELECT sys.id_jogador, $9, $10, $11, $12, $12, $13, $14 FROM sys\",\n  \"  RETURNING id_personagem\",\n  \"),\",\n  \"inv AS (\",\n  \"  INSERT INTO inventario (id_personagem, id_item, quantidade)\",\n  \"  SELECT pj.id_personagem, i.id_item, $15 FROM pj, item i WHERE i.nome = 'Pocao de Cura'\",\n  \"  RETURNING id_personagem\",\n  \")\",\n  \"INSERT INTO partida (id_desafiante, id_oponente, status)\",\n  \"SELECT pj.id_personagem, pi.id_personagem, 'Em Andamento' FROM pj, pi\",\n  \"RETURNING id_partida,\",\n  \"          (SELECT id_personagem FROM pj) AS id_personagem_jogador,\",\n  \"          (SELECT id_personagem FROM pi) AS id_personagem_inimigo;\"\n].join(\"\\n\");\nmsg.params = [\n  b.jogador.nome, b.jogador.email,\n  b.personagem.nome_batalha, b.personagem.classe, b.personagem.nivel || 1,\n  b.personagem.hp_maximo, b.personagem.ataque_basico, b.personagem.defesa,\n  b.inimigo.nome_batalha, b.inimigo.classe || 'Monstro', b.inimigo.nivel || 1,\n  b.inimigo.hp_maximo, b.inimigo.ataque_basico, b.inimigo.defesa,\n  (b.personagem.pocoes != null ? b.personagem.pocoes : 3)\n];\nreturn msg;",
     "outputs": 1,
     "x": 530,
     "y": 120,
@@ -271,7 +271,7 @@
     "type": "function",
     "z": "cerco_tab",
     "name": "Montar UPDATE partida",
-    "func": "const b = msg.payload;\nmsg.query = \"UPDATE partida SET fim = current_timestamp, status = 'Finalizada', id_vencedor = $2 WHERE id_partida = $1 RETURNING id_partida, id_vencedor, status, fim;\";\nmsg.params = [b.id_partida, b.id_vencedor || null];\nreturn msg;",
+    "func": "const b = msg.payload;\nmsg.query = \"UPDATE partida SET fim = current_timestamp, status = CASE WHEN $2::integer IS NULL THEN 'Cancelada' ELSE 'Finalizada' END, id_vencedor = $2::integer WHERE id_partida = $1 RETURNING id_partida, id_vencedor, status, fim;\";\nmsg.params = [b.id_partida, b.id_vencedor || null];\nreturn msg;",
     "outputs": 1,
     "x": 510,
     "y": 280,
@@ -532,7 +532,7 @@
     "type": "function",
     "z": "cerco_tab",
     "name": "Montar DELETE se zerou",
-    "func": "const b = msg.original;\nmsg.query = \"DELETE FROM inventario WHERE id_personagem = $1 AND id_item = $2 AND quantidade <= 0;\";\nmsg.params = [b.id_personagem, b.id_item];\nreturn msg;",
+    "func": "const b = msg.original;\nmsg.atualizou = Array.isArray(msg.payload) && msg.payload.length > 0;\nmsg.query = \"DELETE FROM inventario WHERE id_personagem = $1 AND id_item = $2 AND quantidade <= 0;\";\nmsg.params = [b.id_personagem, b.id_item];\nreturn msg;",
     "outputs": 1,
     "x": 1000,
     "y": 540,
@@ -565,7 +565,7 @@
     "type": "function",
     "z": "cerco_tab",
     "name": "Formatar resposta",
-    "func": "msg.payload = { ok: true, mensagem: 'Item atualizado no inventário.' };\nreturn msg;",
+    "func": "if (msg.atualizou) {\n  msg.payload = { ok: true, mensagem: 'Item atualizado no inventário.' };\n} else {\n  msg.statusCode = 404;\n  msg.payload = { ok: false, erro: 'Item não encontrado no inventário ou quantidade zerada.' };\n}\nreturn msg;",
     "outputs": 1,
     "x": 1420,
     "y": 540,
@@ -660,6 +660,47 @@
     "headers": {},
     "x": 1220,
     "y": 620,
+    "wires": []
+  },
+  {
+    "id": "catch_all",
+    "type": "catch",
+    "z": "cerco_tab",
+    "name": "Erros do fluxo",
+    "scope": null,
+    "uncaught": false,
+    "x": 240,
+    "y": 720,
+    "wires": [
+      [
+        "catch_fn"
+      ]
+    ]
+  },
+  {
+    "id": "catch_fn",
+    "type": "function",
+    "z": "cerco_tab",
+    "name": "Responder erro 500",
+    "func": "msg.statusCode = 500;\nmsg.payload = { ok: false, erro: (msg.error && msg.error.message) || 'Erro interno' };\nreturn msg;",
+    "outputs": 1,
+    "x": 520,
+    "y": 720,
+    "wires": [
+      [
+        "catch_resp"
+      ]
+    ]
+  },
+  {
+    "id": "catch_resp",
+    "type": "http response",
+    "z": "cerco_tab",
+    "name": "",
+    "statusCode": "",
+    "headers": {},
+    "x": 760,
+    "y": 720,
     "wires": []
   }
 ]
