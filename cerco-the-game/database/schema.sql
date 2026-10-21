@@ -108,96 +108,47 @@ create table turno (
     )
 );
 
-insert into jogador (nome, email, data_cadastro) values
-('Rafael Menezes',  'rafael.menezes@cerco.com',  '2026-01-10 09:15:00'),
-('Camila Duarte',   'camila.duarte@cerco.com',   '2026-02-03 18:40:00'),
-('Bruno Salgado',   'bruno.salgado@cerco.com',   '2026-03-21 21:05:00'),
-('Sistema (Inimigos)', 'sistema@cerco.com', current_timestamp);
+select * from item where nome = 'Pocao de Cura';
 
-insert into personagem (id_jogador, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa) values
-((select id_jogador from jogador where email = 'rafael.menezes@cerco.com'), 'Kael',          'Guerreiro',  5, 260, 260, 38, 18),
-((select id_jogador from jogador where email = 'rafael.menezes@cerco.com'), 'Armstrong',     'Guerreiro',  6, 300, 300, 45, 25),
-((select id_jogador from jogador where email = 'camila.duarte@cerco.com'),  'Lyra',          'Feiticeira', 4, 230, 230, 42, 12),
-((select id_jogador from jogador where email = 'bruno.salgado@cerco.com'),  'Armstrong Jr.', 'Guerreiro',  3, 240, 180, 30, 20);
 
-insert into item (nome, descricao, tipo, valor_efeito) values
-('Pocao de Cura',        'Restaura pontos de vida instantaneamente.',        'Cura Instantanea',            30),
-('Elixir de Forca',      'Aumenta temporariamente o poder de ataque.',       'Bonus Temporario de Ataque',  15),
-('Escudo Arcano',        'Cria uma barreira que absorve parte do dano.',     'Protecao Escudo',             20),
-('Bomba de Fragmentacao','Causa dano explosivo ao alvo.',                    'Dano em Area',                25);
 
-insert into inventario (id_personagem, id_item, quantidade) values
-(1, 1, 3),
-(1, 2, 1),
-(2, 1, 2),
-(2, 4, 1),
-(3, 1, 3),
-(3, 3, 2),
-(4, 1, 1);
-
-insert into partida (id_desafiante, id_oponente, id_vencedor, inicio, fim, status) values
-(1, 3, 1, '2026-04-05 20:00:00', '2026-04-05 20:12:00', 'Finalizada'),
-(2, 4, 4, '2026-04-06 19:30:00', '2026-04-06 19:41:00', 'Finalizada');
-
-insert into turno (id_partida, ordem_turno, id_personagem, tipo_acao, id_item, valor_impacto) values
-(1, 1, 1, 'Ataque Basico',       null, 38),
-(1, 2, 3, 'Habilidade Especial', null, 20),
-(1, 3, 1, 'Habilidade Especial', null, 45),
-(1, 4, 3, 'Uso de Item',         1,    30),
-(1, 5, 1, 'Ataque Basico',       null, 38),
-(1, 6, 3, 'Ataque Basico',       null, 42);
-
-insert into turno (id_partida, ordem_turno, id_personagem, tipo_acao, id_item, valor_impacto) values
-(2, 1, 2, 'Ataque Basico',       null, 55),
-(2, 2, 4, 'Habilidade Especial', null, 25),
-(2, 3, 2, 'Uso de Item',         4,    25),
-(2, 4, 4, 'Habilidade Especial', null, 60),
-(2, 5, 2, 'Passar a Vez',        null, 0),
-(2, 6, 4, 'Ataque Basico',       null, 30);
-
-select * from jogador;
-select * from personagem;
-select * from item;
-select * from inventario;
-select * from partida;
-select * from turno;
-
-select
-    j.nome                        as jogador,
-    p.nome_batalha                as personagem,
-    p.classe                      as classe,
-    count(distinct pa.id_partida) as total_vitorias,
-    count(distinct t.id_turno)    as total_turnos_executados
-from personagem p
-inner join jogador j
-        on j.id_jogador = p.id_jogador
-left join partida pa
-        on pa.id_vencedor = p.id_personagem
-       and pa.status = 'Finalizada'
-left join turno t
-        on t.id_personagem = p.id_personagem
-where p.nivel >= 4
-group by j.nome, p.nome_batalha, p.classe
-order by total_vitorias desc, p.nome_batalha asc;
-
-select j.nome as jogador, p.nome_batalha as personagem, p.classe as classe
-from personagem p
-join jogador j on j.id_jogador = p.id_jogador
-where p.nivel > 1
-  and p.hp_atual < p.hp_maximo
-order by p.nivel desc;
-
-select p.nome_batalha as personagem, i.nome as item, i.tipo as tipo, inv.quantidade
-from inventario inv
-join personagem p on p.id_personagem = inv.id_personagem
-join item i on i.id_item = inv.id_item
-where i.tipo in ('Cura Instantanea', 'Bonus Temporario de Ataque', 'Protecao Escudo', 'Dano em Area')
-  and inv.quantidade <= 2
-order by inv.quantidade asc;
-
-select pa.id_partida, pa.fim, p.nome_batalha as personagem_vencedor, (pa.fim - pa.inicio) as duracao
-from partida pa
-join personagem p on p.id_personagem = pa.id_vencedor
-where pa.status = 'Finalizada'
-  and pa.id_vencedor is not null
-order by pa.fim desc;
+--select
+  --  j.nome                        as jogador,
+    --p.nome_batalha                as personagem,
+   -- p.classe                      as classe,
+    --count(distinct pa.id_partida) as total_vitorias,
+    --count(distinct t.id_turno)    as total_turnos_executados
+--from personagem p
+--inner join jogador j
+--        on j.id_jogador = p.id_jogador
+--left join partida pa
+--        on pa.id_vencedor = p.id_personagem
+--      and pa.status = 'Finalizada'
+--left join turno t
+--        on t.id_personagem = p.id_personagem
+--where p.nivel >= 4
+--group by j.nome, p.nome_batalha, p.classe
+--order by total_vitorias desc, p.nome_batalha asc;
+--
+--select j.nome as jogador, p.nome_batalha as personagem, p.classe as classe
+--from personagem p
+--join jogador j on j.id_jogador = p.id_jogador
+--where p.nivel > 1
+--  and p.hp_atual < p.hp_maximo
+--order by p.nivel desc;
+--
+--select p.nome_batalha as personagem, i.nome as item, i.tipo as tipo, inv.quantidade
+--from inventario inv
+--join personagem p on p.id_personagem = inv.id_personagem
+--join item i on i.id_item = inv.id_item
+--where i.tipo in ('Cura Instantanea', 'Bonus Temporario de Ataque', 'Protecao Escudo', 'Dano em Area')
+--  and inv.quantidade <= 2
+--order by inv.quantidade asc;
+--
+--select pa.id_partida, pa.fim, p.nome_batalha as personagem_vencedor, (pa.fim - pa.inicio) as duracao
+--from partida pa
+--join personagem p on p.id_personagem = pa.id_vencedor
+--where pa.status = 'Finalizada'
+--  and pa.id_vencedor is not null
+--order by pa.fim desc;
+--

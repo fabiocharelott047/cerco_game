@@ -78,7 +78,8 @@ async function iniciarJogo(chave, nickname) {
       estado.itensJogador = infoJogador.itens || [];
       escrever(`Servidor confirmou: ${infoJogador.nome_batalha} - ${infoJogador.hp_atual}/${infoJogador.hp_maximo} HP.`);
 
-      const pocao = estado.itensJogador.find((it) => it.id_item === CONFIG.ID_ITEM_POCAO);
+      const pocao = estado.itensJogador.find((it) => it.tipo === "Cura Instantanea");
+      estado.idItemPocao = pocao ? pocao.id_item : CONFIG.ID_ITEM_POCAO;
       estado.efeitos.pocoes = pocao ? pocao.quantidade : 0;
       const listaItens = estado.itensJogador.map((it) => `${it.nome} x${it.quantidade}`).join(", ");
       escrever(`Itens disponíveis: ${listaItens || "nenhum"}.`);
@@ -162,7 +163,7 @@ function executarCurar() {
     return;
   }
 
-  apiUsarItem(estado.id_personagem_jogador, CONFIG.ID_ITEM_POCAO);
+  apiUsarItem(estado.id_personagem_jogador, estado.idItemPocao || CONFIG.ID_ITEM_POCAO);
 
   finalizarAcao(false);
 }

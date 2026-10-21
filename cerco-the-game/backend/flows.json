@@ -1,0 +1,714 @@
+[
+    {
+        "id": "ff12b48d1cdd0a26",
+        "type": "tab",
+        "label": "CERCO - Integração Front-Back",
+        "disabled": false,
+        "info": "Endpoints:\n- POST /api/partida/iniciar\n- POST /api/partida/turno\n- POST /api/partida/finalizar\n- POST /api/partida/status-turno        (NOVO - req 1)\n- POST /api/personagem/efeito           (NOVO - req 2, exige ALTER TABLE no check de turno.tipo_acao)\n- POST /api/personagem/usar-item        (NOVO - req 3)\n- GET  /api/personagem/:id_personagem   (NOVO - req 4)\n\nRode 1x o inject 'Setup: criar jogador sistema' antes de usar."
+    },
+    {
+        "id": "89bc1971bca29c02",
+        "type": "inject",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Setup: criar jogador sistema (rodar 1x)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "once": false,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 240,
+        "y": 40,
+        "wires": [
+            [
+                "bed5965517ecdbc2"
+            ]
+        ]
+    },
+    {
+        "id": "bed5965517ecdbc2",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Montar INSERT jogador sistema",
+        "func": "msg.query = \"INSERT INTO jogador (nome, email) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING;\";\nmsg.params = ['Sistema (Inimigos)', 'sistema@cerco.com'];\nreturn msg;",
+        "outputs": 1,
+        "x": 540,
+        "y": 40,
+        "wires": [
+            [
+                "540aa2bd985982f3"
+            ]
+        ]
+    },
+    {
+        "id": "540aa2bd985982f3",
+        "type": "postgresql",
+        "z": "ff12b48d1cdd0a26",
+        "name": "INSERT jogador sistema",
+        "query": "",
+        "postgreSQLConfig": "pgConfig",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 800,
+        "y": 40,
+        "wires": [
+            [
+                "b6d7f96e43fbdbe9"
+            ]
+        ]
+    },
+    {
+        "id": "b6d7f96e43fbdbe9",
+        "type": "debug",
+        "z": "ff12b48d1cdd0a26",
+        "name": "log setup",
+        "active": true,
+        "x": 1000,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "2e875968d0055cab",
+        "type": "http in",
+        "z": "ff12b48d1cdd0a26",
+        "name": "POST /api/partida/iniciar",
+        "url": "/api/partida/iniciar",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 230,
+        "y": 120,
+        "wires": [
+            [
+                "29c399074b05aa02"
+            ]
+        ]
+    },
+    {
+        "id": "29c399074b05aa02",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Montar INSERT jogador+personagens+inventario+partida",
+        "func": "const b = msg.payload;\nmsg.query = [\n  \"WITH j AS (\",\n  \"  INSERT INTO jogador (nome, email) VALUES ($1, $2)\",\n  \"  ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome\",\n  \"  RETURNING id_jogador\",\n  \"),\",\n  \"sys AS (\",\n  \"  INSERT INTO jogador (nome, email) VALUES ('Sistema (Inimigos)', 'sistema@cerco.com')\",\n  \"  ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome\",\n  \"  RETURNING id_jogador\",\n  \"),\",\n  \"pj AS (\",\n  \"  INSERT INTO personagem (id_jogador, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa)\",\n  \"  SELECT j.id_jogador, $3, $4, $5, $6, $6, $7, $8 FROM j\",\n  \"  RETURNING id_personagem\",\n  \"),\",\n  \"pi AS (\",\n  \"  INSERT INTO personagem (id_jogador, nome_batalha, classe, nivel, hp_maximo, hp_atual, ataque_basico, defesa)\",\n  \"  SELECT sys.id_jogador, $9, $10, $11, $12, $12, $13, $14 FROM sys\",\n  \"  RETURNING id_personagem\",\n  \"),\",\n  \"it AS (\",\n  \"  INSERT INTO item (nome, descricao, tipo, valor_efeito)\",\n  \"  VALUES ('Pocao de Cura', 'Restaura pontos de vida instantaneamente.', 'Cura Instantanea', 30)\",\n  \"  ON CONFLICT (nome) DO UPDATE SET nome = EXCLUDED.nome\",\n  \"  RETURNING id_item\",\n  \"),\",\n  \"inv AS (\",\n  \"  INSERT INTO inventario (id_personagem, id_item, quantidade)\",\n  \"  SELECT pj.id_personagem, it.id_item, $15 FROM pj, it\",\n  \"  RETURNING id_personagem\",\n  \")\",\n  \"INSERT INTO partida (id_desafiante, id_oponente, status)\",\n  \"SELECT pj.id_personagem, pi.id_personagem, 'Em Andamento' FROM pj, pi\",\n  \"RETURNING id_partida,\",\n  \"          (SELECT id_personagem FROM pj) AS id_personagem_jogador,\",\n  \"          (SELECT id_personagem FROM pi) AS id_personagem_inimigo;\"\n].join(\"\\n\");\nmsg.params = [\n  b.jogador.nome, b.jogador.email,\n  b.personagem.nome_batalha, b.personagem.classe, b.personagem.nivel || 1,\n  b.personagem.hp_maximo, b.personagem.ataque_basico, b.personagem.defesa,\n  b.inimigo.nome_batalha, b.inimigo.classe || 'Monstro', b.inimigo.nivel || 1,\n  b.inimigo.hp_maximo, b.inimigo.ataque_basico, b.inimigo.defesa,\n  (b.personagem.pocoes != null ? b.personagem.pocoes : 3)\n];\nreturn msg;",
+        "outputs": 1,
+        "x": 590,
+        "y": 120,
+        "wires": [
+            [
+                "8c79923539fb0501"
+            ]
+        ]
+    },
+    {
+        "id": "8c79923539fb0501",
+        "type": "postgresql",
+        "z": "ff12b48d1cdd0a26",
+        "name": "INSERT partida inicial",
+        "query": "",
+        "postgreSQLConfig": "pgConfig",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 960,
+        "y": 120,
+        "wires": [
+            [
+                "57676de40596e0aa"
+            ]
+        ]
+    },
+    {
+        "id": "57676de40596e0aa",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Formatar resposta",
+        "func": "msg.payload = (msg.payload && msg.payload[0]) ? msg.payload[0] : { erro: 'Falha ao iniciar partida' };\nreturn msg;",
+        "outputs": 1,
+        "x": 1170,
+        "y": 120,
+        "wires": [
+            [
+                "419aa60aa635cafc"
+            ]
+        ]
+    },
+    {
+        "id": "419aa60aa635cafc",
+        "type": "http response",
+        "z": "ff12b48d1cdd0a26",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1360,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "8596a08faf463b78",
+        "type": "http in",
+        "z": "ff12b48d1cdd0a26",
+        "name": "POST /api/partida/turno",
+        "url": "/api/partida/turno",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 220,
+        "y": 200,
+        "wires": [
+            [
+                "d75994fe4f8c35b0"
+            ]
+        ]
+    },
+    {
+        "id": "d75994fe4f8c35b0",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Montar INSERT turno",
+        "func": "const b = msg.payload;\nmsg.query = \"INSERT INTO turno (id_partida, ordem_turno, id_personagem, tipo_acao, id_item, valor_impacto) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_turno;\";\nmsg.params = [b.id_partida, b.ordem_turno, b.id_personagem, b.tipo_acao, b.id_item || null, b.valor_impacto || 0];\nreturn msg;",
+        "outputs": 1,
+        "x": 500,
+        "y": 200,
+        "wires": [
+            [
+                "9c68b8638d1d048c"
+            ]
+        ]
+    },
+    {
+        "id": "9c68b8638d1d048c",
+        "type": "postgresql",
+        "z": "ff12b48d1cdd0a26",
+        "name": "INSERT turno",
+        "query": "",
+        "postgreSQLConfig": "pgConfig",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 730,
+        "y": 200,
+        "wires": [
+            [
+                "6f97740b4e89e6d1"
+            ]
+        ]
+    },
+    {
+        "id": "6f97740b4e89e6d1",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Formatar resposta",
+        "func": "msg.payload = (msg.payload && msg.payload[0]) ? msg.payload[0] : { erro: 'Falha ao registrar turno' };\nreturn msg;",
+        "outputs": 1,
+        "x": 940,
+        "y": 200,
+        "wires": [
+            [
+                "aa8d34b7fd4a2d93"
+            ]
+        ]
+    },
+    {
+        "id": "aa8d34b7fd4a2d93",
+        "type": "http response",
+        "z": "ff12b48d1cdd0a26",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1130,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "6e8405d943dbeaf6",
+        "type": "http in",
+        "z": "ff12b48d1cdd0a26",
+        "name": "POST /api/partida/finalizar",
+        "url": "/api/partida/finalizar",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 230,
+        "y": 280,
+        "wires": [
+            [
+                "1c5f1e4464678d53"
+            ]
+        ]
+    },
+    {
+        "id": "1c5f1e4464678d53",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Montar UPDATE partida",
+        "func": "const b = msg.payload;\nmsg.query = \"UPDATE partida SET fim = current_timestamp, status = CASE WHEN $2::integer IS NULL THEN 'Cancelada' ELSE 'Finalizada' END, id_vencedor = $2::integer WHERE id_partida = $1 RETURNING id_partida, id_vencedor, status, fim;\";\nmsg.params = [b.id_partida, b.id_vencedor || null];\nreturn msg;",
+        "outputs": 1,
+        "x": 510,
+        "y": 280,
+        "wires": [
+            [
+                "40b0495ba8afdc65"
+            ]
+        ]
+    },
+    {
+        "id": "40b0495ba8afdc65",
+        "type": "postgresql",
+        "z": "ff12b48d1cdd0a26",
+        "name": "UPDATE partida (finalizar)",
+        "query": "",
+        "postgreSQLConfig": "pgConfig",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 760,
+        "y": 280,
+        "wires": [
+            [
+                "643d94c0b417fe48"
+            ]
+        ]
+    },
+    {
+        "id": "643d94c0b417fe48",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Formatar resposta",
+        "func": "msg.payload = (msg.payload && msg.payload[0]) ? msg.payload[0] : { erro: 'Falha ao finalizar partida' };\nreturn msg;",
+        "outputs": 1,
+        "x": 1070,
+        "y": 280,
+        "wires": [
+            [
+                "0057608da9cd8679"
+            ]
+        ]
+    },
+    {
+        "id": "0057608da9cd8679",
+        "type": "http response",
+        "z": "ff12b48d1cdd0a26",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1260,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "f21ef182651843b1",
+        "type": "http in",
+        "z": "ff12b48d1cdd0a26",
+        "name": "POST /api/partida/status-turno",
+        "url": "/api/partida/status-turno",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 240,
+        "y": 380,
+        "wires": [
+            [
+                "9731bd117209291b"
+            ]
+        ]
+    },
+    {
+        "id": "9731bd117209291b",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Montar UPDATE hp dos dois personagens",
+        "func": "const b = msg.payload;\nmsg.query = \"\\n  WITH u1 AS (\\n    UPDATE personagem SET hp_atual = $2 WHERE id_personagem = $1 RETURNING id_personagem, hp_atual\\n  ),\\n  u2 AS (\\n    UPDATE personagem SET hp_atual = $4 WHERE id_personagem = $3 RETURNING id_personagem, hp_atual\\n  )\\n  SELECT * FROM u1\\n  UNION ALL\\n  SELECT * FROM u2;\\n\";\nmsg.params = [b.id_personagem_jogador, b.hp_jogador, b.id_personagem_inimigo, b.hp_inimigo];\nreturn msg;",
+        "outputs": 1,
+        "x": 560,
+        "y": 380,
+        "wires": [
+            [
+                "2a5222dba7538deb"
+            ]
+        ]
+    },
+    {
+        "id": "2a5222dba7538deb",
+        "type": "postgresql",
+        "z": "ff12b48d1cdd0a26",
+        "name": "UPDATE hp (status do turno)",
+        "query": "",
+        "postgreSQLConfig": "pgConfig",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 900,
+        "y": 380,
+        "wires": [
+            [
+                "eb6f2bb1a17ae7c3"
+            ]
+        ]
+    },
+    {
+        "id": "eb6f2bb1a17ae7c3",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Formatar resposta",
+        "func": "msg.payload = { ok: true, atualizado: msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "x": 1170,
+        "y": 380,
+        "wires": [
+            [
+                "4f4eff7c63de3d09"
+            ]
+        ]
+    },
+    {
+        "id": "4f4eff7c63de3d09",
+        "type": "http response",
+        "z": "ff12b48d1cdd0a26",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1350,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "037edd0f0978a6c1",
+        "type": "http in",
+        "z": "ff12b48d1cdd0a26",
+        "name": "POST /api/personagem/efeito",
+        "url": "/api/personagem/efeito",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 220,
+        "y": 460,
+        "wires": [
+            [
+                "6d17241e4b982ac7"
+            ]
+        ]
+    },
+    {
+        "id": "6d17241e4b982ac7",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Montar INSERT efeito persistente",
+        "func": "const b = msg.payload;\nmsg.query = \"INSERT INTO turno (id_partida, ordem_turno, id_personagem, tipo_acao, id_item, valor_impacto) VALUES ($1, $2, $3, 'Efeito Persistente', NULL, $4) RETURNING id_turno;\";\nmsg.params = [b.id_partida, b.ordem_turno, b.id_personagem_alvo, b.turnos];\nreturn msg;",
+        "outputs": 1,
+        "x": 520,
+        "y": 460,
+        "wires": [
+            [
+                "6bdcf1738306bfd9"
+            ]
+        ]
+    },
+    {
+        "id": "6bdcf1738306bfd9",
+        "type": "postgresql",
+        "z": "ff12b48d1cdd0a26",
+        "name": "INSERT efeito persistente",
+        "query": "",
+        "postgreSQLConfig": "pgConfig",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 830,
+        "y": 460,
+        "wires": [
+            [
+                "9b2ab796ab41578a"
+            ]
+        ]
+    },
+    {
+        "id": "9b2ab796ab41578a",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Formatar resposta",
+        "func": "msg.payload = (msg.payload && msg.payload[0]) ? msg.payload[0] : { erro: 'Falha ao registrar efeito' };\nreturn msg;",
+        "outputs": 1,
+        "x": 1060,
+        "y": 460,
+        "wires": [
+            [
+                "35be7190093f5b51"
+            ]
+        ]
+    },
+    {
+        "id": "35be7190093f5b51",
+        "type": "http response",
+        "z": "ff12b48d1cdd0a26",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1230,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "b9f28041ee702c22",
+        "type": "http in",
+        "z": "ff12b48d1cdd0a26",
+        "name": "POST /api/personagem/usar-item",
+        "url": "/api/personagem/usar-item",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 220,
+        "y": 540,
+        "wires": [
+            [
+                "c41574a4ed755950"
+            ]
+        ]
+    },
+    {
+        "id": "c41574a4ed755950",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Montar UPDATE decrementar item",
+        "func": "const b = msg.payload;\nmsg.original = b;\nmsg.query = \"UPDATE inventario SET quantidade = quantidade - 1 WHERE id_personagem = $1 AND id_item = $2 AND quantidade > 0 RETURNING quantidade;\";\nmsg.params = [b.id_personagem, b.id_item];\nreturn msg;",
+        "outputs": 1,
+        "x": 540,
+        "y": 540,
+        "wires": [
+            [
+                "fe7f942953d1db96"
+            ]
+        ]
+    },
+    {
+        "id": "fe7f942953d1db96",
+        "type": "postgresql",
+        "z": "ff12b48d1cdd0a26",
+        "name": "UPDATE decrementar item",
+        "query": "",
+        "postgreSQLConfig": "pgConfig",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 840,
+        "y": 540,
+        "wires": [
+            [
+                "45549c33dd99d05a"
+            ]
+        ]
+    },
+    {
+        "id": "45549c33dd99d05a",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Montar DELETE se zerou",
+        "func": "const b = msg.original;\nmsg.atualizou = Array.isArray(msg.payload) && msg.payload.length > 0;\nmsg.query = \"DELETE FROM inventario WHERE id_personagem = $1 AND id_item = $2 AND quantidade <= 0;\";\nmsg.params = [b.id_personagem, b.id_item];\nreturn msg;",
+        "outputs": 1,
+        "x": 1130,
+        "y": 540,
+        "wires": [
+            [
+                "69cf8181146b21dd"
+            ]
+        ]
+    },
+    {
+        "id": "69cf8181146b21dd",
+        "type": "postgresql",
+        "z": "ff12b48d1cdd0a26",
+        "name": "DELETE item zerado",
+        "query": "",
+        "postgreSQLConfig": "pgConfig",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1410,
+        "y": 540,
+        "wires": [
+            [
+                "fa3cf0a92735ebbf"
+            ]
+        ]
+    },
+    {
+        "id": "fa3cf0a92735ebbf",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Formatar resposta",
+        "func": "if (msg.atualizou) {\n  msg.payload = { ok: true, mensagem: 'Item atualizado no inventário.' };\n} else {\n  msg.statusCode = 404;\n  msg.payload = { ok: false, erro: 'Item não encontrado no inventário ou quantidade zerada.' };\n}\nreturn msg;",
+        "outputs": 1,
+        "x": 1660,
+        "y": 540,
+        "wires": [
+            [
+                "495df72f72eb6d71"
+            ]
+        ]
+    },
+    {
+        "id": "495df72f72eb6d71",
+        "type": "http response",
+        "z": "ff12b48d1cdd0a26",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1840,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "e813992c8341138b",
+        "type": "http in",
+        "z": "ff12b48d1cdd0a26",
+        "name": "GET /api/personagem/:id_personagem",
+        "url": "/api/personagem/:id_personagem",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 250,
+        "y": 620,
+        "wires": [
+            [
+                "49025ee5f3e21a66"
+            ]
+        ]
+    },
+    {
+        "id": "49025ee5f3e21a66",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Montar SELECT nome/hp/itens",
+        "func": "const idPersonagem = msg.req.params.id_personagem;\nmsg.query = \"\\n  SELECT p.id_personagem, p.nome_batalha, p.hp_atual, p.hp_maximo,\\n         COALESCE(json_agg(json_build_object('id_item', i.id_item, 'nome', i.nome, 'tipo', i.tipo, 'quantidade', inv.quantidade))\\n                  FILTER (WHERE i.id_item IS NOT NULL), '[]') AS itens\\n  FROM personagem p\\n  LEFT JOIN inventario inv ON inv.id_personagem = p.id_personagem\\n  LEFT JOIN item i ON i.id_item = inv.id_item\\n  WHERE p.id_personagem = $1\\n  GROUP BY p.id_personagem;\\n\";\nmsg.params = [idPersonagem];\nreturn msg;",
+        "outputs": 1,
+        "x": 560,
+        "y": 620,
+        "wires": [
+            [
+                "01a5d2117c39bddc"
+            ]
+        ]
+    },
+    {
+        "id": "01a5d2117c39bddc",
+        "type": "postgresql",
+        "z": "ff12b48d1cdd0a26",
+        "name": "SELECT personagem+itens",
+        "query": "",
+        "postgreSQLConfig": "pgConfig",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 880,
+        "y": 620,
+        "wires": [
+            [
+                "0aae15c023569368"
+            ]
+        ]
+    },
+    {
+        "id": "0aae15c023569368",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Formatar resposta / 404",
+        "func": "if (msg.payload && msg.payload[0]) {\n  msg.payload = msg.payload[0];\n} else {\n  msg.statusCode = 404;\n  msg.payload = { erro: 'Personagem não encontrado' };\n}\nreturn msg;",
+        "outputs": 1,
+        "x": 1170,
+        "y": 620,
+        "wires": [
+            [
+                "8ea7074fb6b72e36"
+            ]
+        ]
+    },
+    {
+        "id": "8ea7074fb6b72e36",
+        "type": "http response",
+        "z": "ff12b48d1cdd0a26",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1370,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "743e5d7e5804619f",
+        "type": "catch",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Erros do fluxo",
+        "scope": null,
+        "uncaught": false,
+        "x": 240,
+        "y": 720,
+        "wires": [
+            [
+                "657f6ee0348d293d"
+            ]
+        ]
+    },
+    {
+        "id": "657f6ee0348d293d",
+        "type": "function",
+        "z": "ff12b48d1cdd0a26",
+        "name": "Responder erro 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = { ok: false, erro: (msg.error && msg.error.message) || 'Erro interno' };\nreturn msg;",
+        "outputs": 1,
+        "x": 520,
+        "y": 720,
+        "wires": [
+            [
+                "aea2a804a38eb524"
+            ]
+        ]
+    },
+    {
+        "id": "aea2a804a38eb524",
+        "type": "http response",
+        "z": "ff12b48d1cdd0a26",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 760,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "pgConfig",
+        "type": "postgreSQLConfig",
+        "name": "cerco_game_bd",
+        "host": "host.docker.internal",
+        "hostFieldType": "str",
+        "port": "5433",
+        "portFieldType": "num",
+        "database": "cerco_game_bd",
+        "databaseFieldType": "str",
+        "ssl": "false",
+        "sslFieldType": "bool",
+        "applicationName": "",
+        "applicationNameType": "str",
+        "max": "10",
+        "maxFieldType": "num",
+        "idle": "1000",
+        "idleFieldType": "num",
+        "connectionTimeout": "10000",
+        "connectionTimeoutFieldType": "num",
+        "userFieldType": "cred",
+        "userEnv": "",
+        "passwordFieldType": "cred",
+        "passwordEnv": ""
+    },
+    {
+        "id": "ec7a0929af7551c8",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-postgresql": "0.16.2"
+        }
+    }
+]
