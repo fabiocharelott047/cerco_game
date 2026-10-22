@@ -91,3 +91,16 @@ function menuAtaques(lista, aoClicar) {
     attackMenu.insertBefore(btn, btnVoltar);
   });
 }
+
+function numeroFlutuante(alvo, texto, tipo, atraso = 0) {
+  const cena = document.querySelector(".battle-scene");
+  setTimeout(() => {
+    const el = document.createElement("div");
+    el.className = `floating-number ${alvo} ${tipo}`;
+    el.textContent = texto;
+    el.style.marginLeft = `${randInt(-18, 18)}px`;
+    el.style.marginBottom = `${randInt(-12, 12)}px`;
+    el.addEventListener("animationend", () => el.remove());
+    cena.appendChild(el);
+  }, atraso);
+}

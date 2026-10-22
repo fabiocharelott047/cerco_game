@@ -395,3 +395,65 @@ body {
     padding: 10px;
   }
 }
+
+.floating-number {
+  position: absolute;
+  z-index: 40;
+  font-size: 30px;
+  font-weight: bold;
+  pointer-events: none;
+  text-shadow: 0 0 3px #000, 0 0 3px #000, 1px 2px 2px #000;
+  animation: floatUp 1.2s ease-out forwards;
+}
+
+.floating-number.dano {
+  color: #ff3333;
+}
+
+.floating-number.cura {
+  color: #4ade80;
+}
+
+.floating-number.player {
+  left: 210px;
+  bottom: 190px;
+}
+
+.floating-number.enemy {
+  right: 250px;
+  bottom: 200px;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.25);
+  }
+  30% {
+    transform: translateY(-14px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70px) scale(1);
+  }
+}
+
+@media (max-width: 600px) {
+  .floating-number {
+    font-size: 20px;
+  }
+
+  .floating-number.player {
+    left: 80px;
+    bottom: 130px;
+  }
+
+  .floating-number.enemy {
+    right: 90px;
+    bottom: 120px;
+  }
+}

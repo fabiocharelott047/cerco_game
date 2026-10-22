@@ -109,9 +109,12 @@ function novoTurno() {
   escrever(`Poções: ${estado.efeitos.pocoes}`);
 
   const inimigoHpAntes = estado.inimigoHp;
-  estado.inimigoHp = aplicarEfeitos(estado.efeitos, estado.inimigoHp);
-  estado.inimigoHp = Math.max(0, estado.inimigoHp);
+  const inimigoHpAposEfeitos = aplicarEfeitos(estado.efeitos, estado.inimigoHp);
+  estado.inimigoHp = Math.max(0, inimigoHpAposEfeitos);
   statusInimigo(estado.inimigoHp, estado.inimigoHpMax, estado.inimigoDano);
+
+  const danoDosEfeitos = inimigoHpAntes - inimigoHpAposEfeitos;
+  if (danoDosEfeitos > 0) numeroFlutuante("enemy", `-${danoDosEfeitos}`, "dano");
 
   if (estado.inimigoHp !== inimigoHpAntes) {
     apiEnviarStatusTurno(estado.id_partida, estado.id_personagem_jogador, estado.hp, estado.id_personagem_inimigo, estado.inimigoHp);
@@ -127,6 +130,8 @@ function novoTurno() {
 function executarAtaque(numero) {
   habilitarBotoesAcao(false);
 
+  const antes = { hp: estado.hp, inimigoHp: estado.inimigoHp };
+
   const efeitosAntes = { ...estado.efeitos };
 
   const funcaoAtaque = FUNCOES_ATAQUE[estado.personagem];
@@ -138,7 +143,7 @@ function executarAtaque(numero) {
 
   notificarEfeitoPersistenteSeHouver(efeitosAntes, estado.efeitos);
 
-  finalizarAcao(false);
+  finalizarAcao(false, antes);
 }
 
 function notificarEfeitoPersistenteSeHouver(antes, depois) {
@@ -153,6 +158,8 @@ function notificarEfeitoPersistenteSeHouver(antes, depois) {
 function executarCurar() {
   habilitarBotoesAcao(false);
 
+  const antes = { hp: estado.hp, inimigoHp: estado.inimigoHp };
+
   const resultado = usarPocao(estado.hp, estado.hpMax, estado.efeitos);
   estado.hp = resultado.hp;
   estado.efeitos = resultado.efeitos;
@@ -165,23 +172,36 @@ function executarCurar() {
 
   apiUsarItem(estado.id_personagem_jogador, estado.idItemPocao || CONFIG.ID_ITEM_POCAO);
 
-  finalizarAcao(false);
+  finalizarAcao(false, antes);
 }
 
 function executarPassarVez() {
   habilitarBotoesAcao(false);
+  const antes = { hp: estado.hp, inimigoHp: estado.inimigoHp };
   estado.hp = pularVez(estado.hp, estado.inimigoDano);
-  finalizarAcao(false);
+  finalizarAcao(false, antes);
 }
 
 function executarFugir() {
   habilitarBotoesAcao(false);
+  const antes = { hp: estado.hp, inimigoHp: estado.inimigoHp };
   const resultado = tentarFuga(estado.hp, estado.inimigoDano);
   estado.hp = resultado.hp;
-  finalizarAcao(resultado.fugiu);
+  finalizarAcao(resultado.fugiu, antes);
 }
 
-function finalizarAcao(fugiu) {
+function mostrarVariacoes(antes) {
+  const perdaJogador = antes.hp - estado.hp;
+  const perdaInimigo = antes.inimigoHp - estado.inimigoHp;
+
+  if (perdaInimigo > 0) numeroFlutuante("enemy", `-${perdaInimigo}`, "dano");
+  if (perdaJogador > 0) numeroFlutuante("player", `-${perdaJogador}`, "dano", perdaInimigo > 0 ? 450 : 0);
+  if (perdaJogador < 0) numeroFlutuante("player", `${-perdaJogador}`, "cura");
+}
+
+function finalizarAcao(fugiu, antes) {
+  if (antes) mostrarVariacoes(antes);
+
   estado.hp = Math.max(0, estado.hp);
   estado.inimigoHp = Math.max(0, estado.inimigoHp);
 
